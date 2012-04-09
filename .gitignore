@@ -1,0 +1,57 @@
+#Thumbnails
+[Tt]humbs.db
+*.DS_Store
+
+#Visual Studio files
+*.[Oo]bj
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.[Cc]ache
+*.ilk
+*.log
+*.sbr
+*.sdf
+*.pdb
+*.opensdf
+*.tlog
+*.intermediate.manifest
+*.exp
+*.lastbuildstate
+*.res
+ipch/
+obj/
+[Bb]in
+[Dd]ebug*/
+[Rr]elease*/
+ipch*/
+Ankh.NoLoad
+
+#Tooling
+_ReSharper*/
+*.resharper
+[Tt]est[Rr]esult*
+
+#Project files
+[Bb]uild/
+
+#Subversion files
+.svn
+
+# Office Temp Files
+~$*
+
+*.userprefs
+*.pidb
+
+# Output directory
+output
