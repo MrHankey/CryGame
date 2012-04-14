@@ -54,7 +54,7 @@
     <ProjectName>CryGame</ProjectName>
     <ProjectGuid>{2652EA4E-BB2C-4DDC-BFD9-89FFC50A4403}</ProjectGuid>
     <RootNamespace>CryGame</RootNamespace>
-<Keyword>Win32Proj</Keyword>
+    <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'" Label="Configuration">
@@ -67,7 +67,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
@@ -93,7 +93,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'" Label="Configuration">
@@ -284,7 +284,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;_FORCEDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -294,6 +294,9 @@
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
+    <Link>
+      <BaseAddress>@$(SolutionDir)BaseAddress.$(Platform).txt,GameDll</BaseAddress>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'">
     <ClCompile>
@@ -318,7 +321,7 @@
     <ClCompile>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;_FORCEDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
     </ClCompile>
@@ -334,6 +337,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX64</TargetMachine>
+      <BaseAddress>@$(SolutionDir)BaseAddress.$(Platform).txt,GameDll</BaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">
