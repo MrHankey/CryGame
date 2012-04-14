@@ -46,6 +46,9 @@
 #		define EXCLUDE_SCALEFORM_SDK
 # endif // defined(DEDICATED_SERVER)
 # define EXCLUDE_CRI_SDK
+#	if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
+#		define ENABLE_STATS_AGENT
+#	endif
 #else
 #	define EXCLUDE_SCALEFORM_SDK
 #	define EXCLUDE_CRI_SDK
@@ -171,8 +174,6 @@
 
 
 
-
-
 #if defined(RESOURCE_COMPILER) || defined(_RELEASE)
   #undef CAPTURE_REPLAY_LOG
 #endif
@@ -191,11 +192,11 @@
 #	define TAGES_EXPORT
 
 
-#if defined(USING_CRYDEV_TAGES_SECURITY)
-# define CRYDEV_TAGES_EXPORT __declspec(dllexport)
-#else
+
+
+
 # define CRYDEV_TAGES_EXPORT
-#endif
+
 
 // test -------------------------------------
 //#define EXCLUDE_CVARHELP
@@ -238,7 +239,7 @@
 #define TRACK_LEVEL_HEAP_USAGE 0
 #endif
 
-#if !defined(_RELEASE) && !defined(RESOURCE_COMPILER)
+#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD)) && !defined(RESOURCE_COMPILER)
 #ifndef ENABLE_PROFILING_CODE
 	#define ENABLE_PROFILING_CODE
 #endif
@@ -335,6 +336,34 @@
 	#define SC_API
 
 #endif
+
+#if !defined(XENON) && !defined(PS3)
+
+	//---------------------------------------------------------------------
+	// Enable Tessellation Stages
+	// (required for displacement mapping, subdivision, water tessellation)
+	//---------------------------------------------------------------------
+	// Modules   : 3DEngine, Renderer
+	// Depends on: DX11
+	#define TESSELLATION
+	#define WATER_TESSELLATION
+	#define MESH_TESSELLATION
+	#define MOTIONBLUR_TESSELLATION
+
+	#ifdef TESSELLATION
+		#ifdef MESH_TESSELLATION
+			#define TESSELLATION_ENGINE
+		#endif
+		#ifdef DIRECT3D10
+			#if defined(WATER_TESSELLATION) || defined(MESH_TESSELLATION)
+				#define TESSELLATION_RENDERER
+			#endif
+		#endif
+	#endif
+
+#endif //#if !defined(XENON) && !defined(PS3)
+
+
 
 #include "ProjectDefinesInclude.h"
 

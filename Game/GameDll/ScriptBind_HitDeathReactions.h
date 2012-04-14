@@ -28,7 +28,7 @@ public:
 	//
 	// Return:
 	// TRUE if the hit is processed successfully, FALSE otherwise
-	int										OnHit(IFunctionHandler *pH, SmartScriptTable scriptHitInfo);
+	int										OnHit(IFunctionHandler *pH, SmartScriptTable scriptHitInfo, float fCausedDamage = 0.0f);
 
 
 	// Executes a hit reaction using the default C++ execution code

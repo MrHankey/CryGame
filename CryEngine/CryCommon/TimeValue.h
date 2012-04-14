@@ -96,11 +96,6 @@ public:
 		m_lValue=indwMilliSec*(TIMEVALUE_PRECISION/1000);
 	}
 
-	ILINE void SetNanoSeconds( const int64 indwNanoSec )
-	{
-		m_lValue=indwNanoSec/(1000000/TIMEVALUE_PRECISION);
-	}
-
 	// Use only for relative value, absolute values suffer a lot from precision loss.
 	ILINE float GetMilliSeconds() const
 	{

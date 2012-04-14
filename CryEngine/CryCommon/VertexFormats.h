@@ -77,6 +77,8 @@ enum EVertexFormat
 
 
 
+
+
 typedef Vec4_tpl<int16f> Vec4sf;		// Used for tangents only.
 
 

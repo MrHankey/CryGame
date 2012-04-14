@@ -239,7 +239,7 @@ namespace spline
 		solve for coefficients a, b, c, d:
 
 			v(t) = a u + b t + c uut + d utt
-			s(t) = v'(t) = -a + b + c (1-4t+3t²) + d (2t-3t²)
+			s(t) = v'(t) = -a + b + c (1-4t+3t^2) + d (2t-3t^2)
 
 			v(0) = a
 			v(1) = b

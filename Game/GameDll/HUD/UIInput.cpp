@@ -20,11 +20,15 @@
 #include "GameActions.h"
 
 TActionHandler<CUIInput> CUIInput::s_actionHandler;
-SUIEventHelper<CUIInput> CUIInput::s_EventDispatcher;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 CUIInput::CUIInput()
 	: m_pUIFunctions( NULL )
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CUIInput::InitEventSystem()
 {
 	if ( !gEnv->pFlashUI
 		|| !g_pGame->GetIGameFramework() 
@@ -61,33 +65,33 @@ CUIInput::CUIInput()
 	}
 
 	// ui events (sent to ui)
-	m_pUIEvents = gEnv->pFlashUI->CreateEventSystem( "Input", IUIEventSystem::eEST_SYSTEM_TO_UI );
+	m_pUIFunctions = gEnv->pFlashUI->CreateEventSystem( "Input", IUIEventSystem::eEST_SYSTEM_TO_UI );
+	m_eventSender.Init(m_pUIFunctions);
 	{
-		SUIEventDesc eventDesc("OnKeyboardDone", "OnKeyboardDone", "triggered once keyboard is done");
-		eventDesc.Params.push_back( SUIParameterDesc("String", "String", "String of keyboard input", SUIParameterDesc::eUIPT_String) );
-		m_eventMap[eUIE_OnVirtKeyboardDone] = m_pUIEvents->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnKeyboardDone", "triggered once keyboard is done");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_String>("String", "String of keyboard input");
+		m_eventSender.RegisterEvent<eUIE_OnVirtKeyboardDone>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnKeyboardCancelled", "OnKeyboardCancelled", "triggered once keyboard is cancelled");
-		m_eventMap[eUIE_OnVirtKeyboardCancelled] = m_pUIEvents->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnKeyboardCancelled", "triggered once keyboard is cancelled");
+		m_eventSender.RegisterEvent<eUIE_OnVirtKeyboardCancelled>(eventDesc);
 	}
 
-
-	// ui fuctions (called from ui)
-	m_pUIFunctions = gEnv->pFlashUI->CreateEventSystem( "Input", IUIEventSystem::eEST_UI_TO_SYSTEM );
+	// ui events (called from ui)
+	m_pUIEvents = gEnv->pFlashUI->CreateEventSystem( "Input", IUIEventSystem::eEST_UI_TO_SYSTEM );
+	m_eventDispatcher.Init(m_pUIEvents, this, "UIInput");
 	{
-		SUIEventDesc eventDesc("ShowVirualKeyboard", "ShowVirualKeyboard", "Displays the virtual keyboard");
-		eventDesc.Params.push_back( SUIParameterDesc("Title", "Title", "Title for the virtual keyboard", SUIParameterDesc::eUIPT_String) );
-		eventDesc.Params.push_back( SUIParameterDesc("InitialStr", "Value", "Initial string of virtual keyboard", SUIParameterDesc::eUIPT_String) );
-		eventDesc.Params.push_back( SUIParameterDesc("MaxChars", "MaxChars", "Maximum chars", SUIParameterDesc::eUIPT_Int) );
-		s_EventDispatcher.RegisterEvent( m_pUIFunctions, eventDesc, &CUIInput::OnDisplayVirtualKeyboard );
+		SUIEventDesc eventDesc("ShowVirualKeyboard", "Displays the virtual keyboard");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_String>("Title", "Title for the virtual keyboard");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_String>("Value", "Initial string of virtual keyboard");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("MaxChars", "Maximum chars");
+		m_eventDispatcher.RegisterEvent( eventDesc, &CUIInput::OnDisplayVirtualKeyboard );
 	}
-	m_pUIFunctions->RegisterListener( this, "CUIInput" );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-CUIInput::~CUIInput()
+void CUIInput::UnloadEventSystem()
 {
 	if (   gEnv->pGame 
 		&& gEnv->pGame->GetIGameFramework() 
@@ -96,53 +100,26 @@ CUIInput::~CUIInput()
 		IActionMapManager* pAmMgr = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
 		pAmMgr->RemoveExtraActionListener( this );
 	}
-	if ( m_pUIFunctions )
-		m_pUIFunctions->UnregisterListener(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUIInput::KeyboardCancelled()
 {
-	NotifyUI(eUIE_OnVirtKeyboardCancelled);
+	m_eventSender.SendEvent<eUIE_OnVirtKeyboardCancelled>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUIInput::KeyboardFinished(const wchar_t *pInString)
 {
-	SUIArguments args;
-	args.AddArgument( pInString );
-	NotifyUI(eUIE_OnVirtKeyboardDone, args);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUIInput::NotifyUI(EUIEvent eventType, const SUIArguments& args)
-{
-	if( m_pUIEvents )
-		m_pUIEvents->SendEvent( SUIEvent(m_eventMap[eventType], args) );
+	m_eventSender.SendEvent<eUIE_OnVirtKeyboardDone>(pInString);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////// UI Functions ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUIInput::OnEvent( const SUIEvent& event )
+void CUIInput::OnDisplayVirtualKeyboard( const wchar_t* title, const wchar_t* initialStr, int maxchars )
 {
-	s_EventDispatcher.Dispatch( this, event );
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Arg1: Title
-// Arg2: InitialStr
-// Arg3: maxinput
-//
-void CUIInput::OnDisplayVirtualKeyboard( const SUIEvent& event )
-{
-	static wstring title;
-	static wstring initialStr;
-	int maxinput;
-	if (event.args.GetArg(0, title) && event.args.GetArg(1, initialStr) && event.args.GetArg(2, maxinput))
-	{
-		gEnv->pFlashUI->DisplayVirtualKeyboard(IPlatformOS::KbdFlag_Default, title.c_str(), initialStr.c_str(), maxinput, this );
-	}
+	gEnv->pFlashUI->DisplayVirtualKeyboard(IPlatformOS::KbdFlag_Default, title, initialStr, maxchars, this );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,10 +133,11 @@ void CUIInput::OnAction( const ActionId& action, int activationMode, float value
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CUIInput::OnActionTogglePause(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	if ( g_pGame->GetIGameFramework()->IsGameStarted() )
+	CUIMenuEvents* pMenuEvents = UIEvents::Get<CUIMenuEvents>();
+	if (g_pGame->GetIGameFramework()->IsGameStarted() && pMenuEvents)
 	{
-		const bool bIsIngameMenu = CUIManager::GetInstance()->GetUIMenuEvents()->IsIngameMenuStarted();
-		CUIManager::GetInstance()->GetUIMenuEvents()->DisplayIngameMenu(!bIsIngameMenu);
+		const bool bIsIngameMenu = pMenuEvents->IsIngameMenuStarted();
+		pMenuEvents->DisplayIngameMenu(!bIsIngameMenu);
 	}
 	return false;
 }
@@ -167,9 +145,10 @@ bool CUIInput::OnActionTogglePause(EntityId entityId, const ActionId& actionId, 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CUIInput::OnActionStartPause(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	if ( g_pGame->GetIGameFramework()->IsGameStarted() && !CUIManager::GetInstance()->GetUIMenuEvents()->IsIngameMenuStarted())
+	CUIMenuEvents* pMenuEvents = UIEvents::Get<CUIMenuEvents>();
+	if ( g_pGame->GetIGameFramework()->IsGameStarted() && pMenuEvents && !pMenuEvents->IsIngameMenuStarted())
 	{
-		CUIManager::GetInstance()->GetUIMenuEvents()->DisplayIngameMenu(true);
+			pMenuEvents->DisplayIngameMenu(true);
 	}
 	return false;
 }
@@ -182,6 +161,7 @@ bool CUIInput::OnActionStartPause(EntityId entityId, const ActionId& actionId, i
 		{ \
 			case eAAM_OnPress: 	 gEnv->pFlashUI->DispatchControllerEvent( IUIElement::evt, IUIElement::eCIS_OnPress ); break; \
 			case eAAM_OnRelease: gEnv->pFlashUI->DispatchControllerEvent( IUIElement::evt, IUIElement::eCIS_OnRelease ); break;\
+			case eAAM_Always: \
 			case eAAM_OnHold: 	 gEnv->pFlashUI->DispatchControllerEvent( IUIElement::evt, IUIElement::eCIS_OnPress ); \
 													gEnv->pFlashUI->DispatchControllerEvent( IUIElement::evt, IUIElement::eCIS_OnRelease ); break;\
 		} \
@@ -245,3 +225,6 @@ bool CUIInput::OnActionReset(EntityId entityId, const ActionId& actionId, int ac
 }
 
 #undef SEND_CONTROLLER_EVENT
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+REGISTER_UI_EVENTSYSTEM( CUIInput );

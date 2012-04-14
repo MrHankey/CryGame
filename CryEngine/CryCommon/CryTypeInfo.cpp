@@ -738,7 +738,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
 		if (!var.bBaseClass)
 		{
 			// Nested named struct.
-			string substr = var.ToString(data, FToString(flags).Sub_(0), def_data);
+			string substr = var.ToString(data, FToString(flags).Sub(0), def_data);
 			if (substr.find(',') != string::npos)
 			{
 				// Encase nested composite types in parens.
@@ -752,11 +752,11 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
 		else
 		{
 			// Nameless base struct. Treat children as inline.
-			str += var.ToString(data, FToString(flags).Sub_(1), def_data);
+			str += var.ToString(data, FToString(flags).Sub(1), def_data);
 		}
 	}
 
-	if (flags.TruncateSub && !flags.Sub)
+	if (flags._TruncateSub && !flags._Sub)
 		StripCommas(str);
 	return str;
 }
@@ -817,7 +817,7 @@ static int VarFromString(const CTypeInfo::CVarInfo& Var, void* data, cstr& str, 
 		int nErrors = 0;
 		for AllSubVars(pVar, Var.Type)
 		{
-			if (!*str && flags.SkipEmpty)
+			if (!*str && flags._SkipEmpty)
 				break;
 			nErrors += VarFromString(*pVar, data, str, flags, tempstr);
 		}
@@ -829,7 +829,7 @@ static int VarFromString(const CTypeInfo::CVarInfo& Var, void* data, cstr& str, 
 		cstr substr = ParseElement(str, tempstr);
 		if (!substr)
 		{
-			if (flags.SkipEmpty)
+			if (flags._SkipEmpty)
 				return 0;
 			substr = "";
 		}
@@ -844,7 +844,7 @@ bool CStructInfo::FromString(void* data, cstr str, FFromString flags) const
 
 	for (int v = 0; v < Vars.size(); v++)
 	{
-		if (!*str && flags.SkipEmpty)
+		if (!*str && flags._SkipEmpty)
 			break;
 		nErrors += VarFromString(Vars[v], data, str, flags, tempstr);
 	}
@@ -1022,14 +1022,14 @@ const CTypeInfo::CVarInfo* CStructInfo::FindSubVar(cstr name) const
 {
 	static int s_nLast = 0;
 	int nSize = Vars.size();
-	assert(s_nLast >= 0 && s_nLast < nSize);
 	for (int i = nSize; i > 0; i--)
 	{
+		if (s_nLast >= nSize)
+			s_nLast = 0;
 		const CTypeInfo::CVarInfo& var = Vars[s_nLast];
 		if (var.Type.Size > 0 && NoCase(var.GetName()) == name)
 			return &var;
-		if (++s_nLast == nSize)
-			s_nLast = 0;
+		s_nLast++;
 	}
 	return 0;
 }
@@ -1161,7 +1161,7 @@ string CEnumInfo::ToString(const void* data, FToString flags, const void* def_da
 {
 	int val = ReadInt(data, Size);
 
-	if (flags.SkipDefault)
+	if (flags._SkipDefault)
 	{
 		int def_val = def_data ? ReadInt(def_data, Size) : 0;
 		if (val == def_val)
@@ -1192,7 +1192,7 @@ bool CEnumInfo::FromString(void* data, cstr str, FFromString flags) const
 {
 	if (!*str)
 	{
-		if (flags.SkipEmpty)
+		if (flags._SkipEmpty)
 			return true;
 		return WriteInt(data, Size, 0);
 	}

@@ -1555,7 +1555,8 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 	pAddPacketData->SetCacheMode(cCacheMode);
 	pAddPacketData->jobEA = 0;
 	pAddPacketData->eaJobState = crPacket.GetJobStateAddess();
-	pAddPacketData->nInvokerIndex = (unsigned short)~0;
+	// used for non-spu backends during job switching
+	pAddPacketData->nInvokerIndex = pJobParam->GetProgramHandle()->nJobInvokerIdx;
 
 	if(differentJob)
 	{
@@ -1568,7 +1569,8 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 		pAddPacketData->binJobEA	= (uint32)pJob;
 		if (IsValidJobHandle(handle))
 			pAddPacketData->SetPageMode((JobManager::SPUBackend::EPageMode)pJob->GetPageMode());
-		
+
+	
 	}
 
 	// new job queue, or empty job queue
@@ -1807,7 +1809,7 @@ inline void JobManager::SJobSyncVariable::Wait() volatile
 /////////////////////////////////////////////////////////////////////////////////
 inline void JobManager::SJobSyncVariable::SetRunning() volatile
 {
-	// this is safe, this this is called before the job is started, so no threading involved
+	// thread-safe, since called before the job is started
 	assert(syncVar.exchangeValue == 0);
 	syncVar.running = 1;
 }

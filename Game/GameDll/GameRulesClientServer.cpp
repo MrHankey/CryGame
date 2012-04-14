@@ -7,7 +7,7 @@ $DateTime$
 
 -------------------------------------------------------------------------
 History:
-- 23:5:2006   9:27 : Created by Márcio Martins
+- 23:5:2006   9:27 : Created by Marcio Martins
 
 *************************************************************************/
 #include "StdAfx.h"
@@ -174,7 +174,8 @@ void CGameRules::ProcessServerHit(const HitInfo &hitInfo)
 {
 	bool ok=true;
 	// check if shooter is alive
-	CActor *pShooter=GetActorByEntityId(hitInfo.shooterId);
+	CActor *pShooter = GetActorByEntityId(hitInfo.shooterId);
+	CActor *pTarget = GetActorByEntityId(hitInfo.targetId);
 
 	if (hitInfo.shooterId)
 	{
@@ -184,15 +185,26 @@ void CGameRules::ProcessServerHit(const HitInfo &hitInfo)
 
 	if (hitInfo.targetId)
 	{
-		CActor *pTarget=GetActorByEntityId(hitInfo.targetId);
 		if (pTarget && pTarget->GetSpectatorMode())
 			ok=false;
 	}
 
 	if (ok)
 	{
+		float fTargetHealthBeforeHit = 0.0f;
+		if(pTarget)
+		{
+			fTargetHealthBeforeHit = pTarget->GetHealth();
+		}
+
 		CreateScriptHitInfo(m_scriptHitInfo, hitInfo);
 		CallScript(m_serverStateScript, "OnHit", m_scriptHitInfo);
+
+		if(pTarget && !pTarget->IsDead())
+		{
+			const float fCausedDamage = fTargetHealthBeforeHit - pTarget->GetHealth();
+			ProcessLocalHit(hitInfo, fCausedDamage);
+		}
 
 		// call hit listeners if any
 		if (m_hitListeners.empty() == false)

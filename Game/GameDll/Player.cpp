@@ -2565,14 +2565,11 @@ void CPlayer::UpdateStats(float frameTime)
 	pPhysEnt->GetStatus(&livStat);
 
 	m_stats.physCamOffset = livStat.camOffset;
-
-	// SNH: this line was commented out by Dejan to fix MAIN-214, but it breaks client players in MP (MAIN-476).
-	if(gEnv->bMultiplayer && IsClient())
-		m_stats.gravity = simPar.gravity;
+	m_stats.gravity = simPar.gravity;
 
 	{
 		float groundNormalBlend = CLAMP(frameTime / 0.15f, 0.0f, 1.0f);
-	m_stats.groundNormal = LERP(m_stats.groundNormal, livStat.groundSlope, groundNormalBlend);
+		m_stats.groundNormal = LERP(m_stats.groundNormal, livStat.groundSlope, groundNormalBlend);
 	}
 
 	if (livStat.groundSurfaceIdxAux > 0)
@@ -2581,9 +2578,7 @@ void CPlayer::UpdateStats(float frameTime)
 		m_stats.groundMaterialIdx = livStat.groundSurfaceIdx;
 
 	Vec3 ppos(GetWBodyCenter());
-
 	bool bootableSurface(false);
-
 	bool groundMatBootable(IsMaterialBootable(m_stats.groundMaterialIdx));
 
 	if (GravityBootsOn() && m_stats.onGroundWBoots>=0.0f)
@@ -3990,10 +3985,17 @@ void CPlayer::SelectNextItem(int direction, bool keepHistory, const char *catego
 		else
 		return;
 	}
+
+	CBinocular* pBinocular = static_cast<CBinocular*>(GetWeaponByClass(CItem::sBinocularsClass));
+	if(pBinocular && pBinocular->IsSelected())
+	{
+		//Pulling binoculars to the head can be interrupted by switching weapons
+		pBinocular->Reset();
+	}
 	
 	EntityId oldItemId=GetCurrentItemId();
 
-		CActor::SelectNextItem(direction, keepHistory, category);
+	CActor::SelectNextItem(direction, keepHistory, category);
 
 	if (GetCurrentItemId() && oldItemId!=GetCurrentItemId())
 		m_bSprinting=false; // force the weapon disabling code to be 
@@ -6761,6 +6763,7 @@ void CPlayer::ExecuteFootStep( ICharacterInstance* pCharacter, const float frame
 		//normalize to Crysis1 max speed of 7m/s, newer physics sounds are absolute m/s speed parameter
 		const float relativeSpeed = pSkeletonAnim->GetCurrentVelocity().GetLength() * 0.142f;
 
+		//CryLogAlways("Footstep time: %f - Count:%d", gEnv->pTimer->GetCurrTime()-m_fLastEffectFootStepTime,m_footstepCounter);
 		m_fLastEffectFootStepTime = gEnv->pTimer->GetCurrTime();
 
 		f32 fZRotation = 0.0f;

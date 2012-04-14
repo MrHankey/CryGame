@@ -18,6 +18,15 @@
 
 #include <CrySizer.h>
 
+enum ESplineType
+{
+	ESPLINE_LINEAR,
+	ESPLINE_CATMULLROM,
+	ESPLINE_HERMIT,
+	ESPLINE_TCB,
+	ESPLINE_BEZIER
+};
+
 //////////////////////////////////////////////////////////////////////////
 
 // These flags are mostly applicable for hermit based splines.

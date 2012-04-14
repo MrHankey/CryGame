@@ -8,7 +8,7 @@ Description: Camera Manager.
 -------------------------------------------------------------------------
 History:
 - 24:04:2008: Created by Nick Hesketh
-- 08:2008: Continued by Jan Müller
+- 08:2008: Continued by Jan Mueller
 
 *************************************************************************/
 

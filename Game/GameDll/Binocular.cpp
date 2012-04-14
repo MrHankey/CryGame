@@ -7,7 +7,7 @@ $DateTime$
 
 -------------------------------------------------------------------------
 History:
-- 18:12:2005   14:01 : Created by Márcio Martins
+- 18:12:2005   14:01 : Created by Marcio Martins
 - 08:01:2011   11:11 : Sascha Hoba
 
 *************************************************************************/
@@ -120,11 +120,14 @@ bool CBinocular::OnActionZoomIn(EntityId actorId, const ActionId& actionId, int 
 {
 	if(m_bZoomed == false)
 		return true;
-				
-	if (m_zm->GetCurrentStep() < m_zm->GetMaxZoomSteps())
+	
+	if (m_zm)
 	{
-		PlayAction(g_pItemStrings->zoom_in);
-		m_zm->StartZoom(false, true);
+		if (m_zm->GetCurrentStep() < m_zm->GetMaxZoomSteps())
+		{
+			PlayAction(g_pItemStrings->zoom_in);
+			m_zm->StartZoom(false, true);
+		}
 	}
 
 	return true;
@@ -135,10 +138,20 @@ bool CBinocular::OnActionZoomOut(EntityId actorId, const ActionId& actionId, int
 {
 	if(m_bZoomed == false)
 		return true;
-				
+
 	if (m_zm)
 	{
-		m_zm->ZoomOut();
+		if (m_zm->GetCurrentStep() > 1)
+		{
+			m_zm->ZoomOut();
+		}
+		else	
+		{
+			PlayAction(g_pItemStrings->lower);
+			m_zm->ExitZoom();
+
+			ResetState();
+		}
 	}
 
 	return true;
@@ -173,7 +186,7 @@ bool CBinocular::OnActionToggleNightVision( EntityId actorId, const ActionId& ac
 
 void CBinocular::Zoom()
 {
-	if (m_zm)
+	if (m_zm && !m_bZoomed)
 	{
 		gEnv->p3DEngine->SetPostEffectParam("Dof_UseMask", 0);
 		gEnv->p3DEngine->SetPostEffectParam("Dof_Active", 1);

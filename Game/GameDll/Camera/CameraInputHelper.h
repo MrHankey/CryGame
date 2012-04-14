@@ -7,8 +7,8 @@ $DateTime$
 Description: Camera input helper, refactored from Camera code in HeroInput
 -------------------------------------------------------------------------
 History:
-- 13:08:2008	Created by Jan Müller
-- 21:08_2008  Modified by Jan Müller : camera pitch/yaw are fully managed in this class
+- 13:08:2008	Created by Jan Mueller
+- 21:08_2008  Modified by Jan Mueller : camera pitch/yaw are fully managed in this class
 
 *************************************************************************/
 

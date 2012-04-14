@@ -41,6 +41,8 @@ enum EDataType
 	eDATA_DeferredShading,
 	eDATA_GameEffect,
 	eDATA_LightShape,
+	eDATA_EnergyShield,
+	eDATA_BreakableGlass,
 };
 
 #include <Cry_Color.h>
@@ -62,6 +64,7 @@ enum EDataType
 #define FCEF_MERGABLE    0x400
 
 #define FCEF_SKINNED    0x800
+#define FCEF_PRE_DRAW_DONE	0x1000
 
 #define FGP_NOCALC 1
 #define FGP_SRC    2
@@ -138,12 +141,12 @@ public:
   inline void mfSetFlags(uint32 fl) { m_Flags = fl; }
   inline void mfUpdateFlags(uint32 fl) { m_Flags |= fl; }
   inline void mfClearFlags(uint32 fl) { m_Flags &= ~fl; }
-  inline bool mfCheckUpdate(EVertexFormat eVertFormat, int Flags, uint16 nFrame)
+  inline bool mfCheckUpdate(EVertexFormat eVertFormat, int Flags, uint16 nFrame, bool bTessellation = false)
   {
     if (nFrame != m_nFrameUpdated || (m_Flags & (FCEF_DIRTY | FCEF_SKINNED | FCEF_UPDATEALWAYS)))
     {
       m_nFrameUpdated = nFrame;
-      return mfUpdate(eVertFormat, Flags);
+      return mfUpdate(eVertFormat, Flags, bTessellation);
     }
     return true;
   }
@@ -167,7 +170,7 @@ public:
   virtual bool mfDraw(CShader *ef, SShaderPass *sfm);
   virtual void *mfGetPointer(ESrcPointer ePT, int *Stride, EParamType Type, ESrcPointer Dst, int Flags);
   virtual bool mfPreDraw(SShaderPass *sl) { return true; }
-  virtual bool mfUpdate(EVertexFormat eVertFormat, int Flags) { return true; }
+  virtual bool mfUpdate(EVertexFormat eVertFormat, int Flags, bool bTessellation = false) { return true; }
   virtual void mfPrecache(const SShaderItem& SH) {}
   virtual void mfExport(struct SShaderSerializeContext& SC) {}
   virtual int Size() {return 0;}
@@ -189,7 +192,7 @@ public:
 #include "CRELightPropagationVolume.h" 
 #include "CREGameEffect.h" 
 #include "CRELightShape.h"
-
+#include "CREBreakableGlass.h"
 
 #if !defined(EXCLUDE_DOCUMENTATION_PURPOSE)
 #include "CREPrismObject.h" 

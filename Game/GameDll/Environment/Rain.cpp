@@ -28,7 +28,7 @@ void CRain::PreloadTextures()
 {
 	uint32 nDefaultFlags = FT_DONT_RESIZE | FT_DONT_STREAM;
 
-	XmlNodeRef root = GetISystem()->LoadXmlFromFile( "Shaders/EngineAssets/raintextures.xml" );
+	XmlNodeRef root = GetISystem()->LoadXmlFromFile( "EngineAssets/raintextures.xml" );
 	if (root)
 	{
 		for (int i = 0; i < root->getChildCount(); i++)

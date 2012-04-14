@@ -14,13 +14,13 @@
 #include "StdAfx.h"
 #include "UIManager.h"
 
-#include "UIInput.h"
-#include "UIObjectives.h"
-#include "UISettings.h"
-#include "UIMultiPlayer.h"
-#include "UIMenuEvents.h"
-#include "UIHUD3D.h"
-#include "UIEntityDynTexTag.h"
+#include <IGame.h>
+#include <IGameFramework.h>
+#include <IFlashUI.h>
+
+IUIEventSystemFactory* IUIEventSystemFactory::s_pFirst = NULL;
+IUIEventSystemFactory* IUIEventSystemFactory::s_pLast;
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// Singleton ///////////////////////////////////////
@@ -55,13 +55,33 @@ CUIManager* CUIManager::GetInstance()
 CUIManager::CUIManager()
 	: m_bPickupMsgVisible(false)
 {
-	m_pUIInput = new CUIInput();
-	m_pUIObjectives = new CUIObjectives();
-	m_pUISettings = new CUISettings();
-	m_pUIMultiPlayer = new CUIMultiPlayer();
-	m_pUIMenuEvents = new CUIMenuEvents();
-	m_pHUD3D = new CUIHUD3D();
-	m_pUIEntityDynTexTag = new CUIEntityDynTexTag();
+	IUIEventSystemFactory* pFactory = IUIEventSystemFactory::GetFirst();
+	while (pFactory)
+	{
+		IUIGameEventSystem* pGameEvent = pFactory->Create();
+		CRY_ASSERT_MESSAGE(pGameEvent, "Invalid IUIEventSystemFactory!");
+		const char* name = pGameEvent->GetTypeName();
+		TUIEventSystems::const_iterator it = m_EventSystems.find(name);
+		if(it == m_EventSystems.end())
+		{
+			m_EventSystems[name] = pGameEvent;
+		}
+		else
+		{
+			string str;
+			str.Format("IUIGameEventSystem \"%s\" already exists!", name);
+			CRY_ASSERT_MESSAGE(false, str.c_str());
+			SAFE_DELETE(pGameEvent);
+		}
+		pFactory = pFactory->GetNext();
+	}
+
+	TUIEventSystems::const_iterator it = m_EventSystems.begin();
+	TUIEventSystems::const_iterator end = m_EventSystems.end();
+	for (;it != end; ++it)
+	{
+		it->second->InitEventSystem();
+	}
 
 	m_soundListener = gEnv->pSoundSystem->CreateListener();
 	InitSound();
@@ -73,21 +93,39 @@ CUIManager::CUIManager()
 /////////////////////////////////////////////////////////////////////////////////////
 CUIManager::~CUIManager()
 {
+	TUIEventSystems::const_iterator it = m_EventSystems.begin();
+	TUIEventSystems::const_iterator end = m_EventSystems.end();
+	for (;it != end; ++it)
+	{
+		it->second->UnloadEventSystem();
+	}
+
+	it = m_EventSystems.begin();
+	for (;it != end; ++it)
+	{
+		delete it->second;
+	}
+
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener( this );
-	SAFE_DELETE( m_pUIInput );
-	SAFE_DELETE( m_pUIObjectives );
-	SAFE_DELETE( m_pUISettings );
-	SAFE_DELETE( m_pUIMultiPlayer );
-	SAFE_DELETE( m_pUIMenuEvents );
-	SAFE_DELETE( m_pHUD3D );
-	SAFE_DELETE( m_pUIEntityDynTexTag );
+
+}
+
+IUIGameEventSystem* CUIManager::GetUIEventSystem(const char* type) const
+{
+	TUIEventSystems::const_iterator it = m_EventSystems.find(type);
+	assert(it != m_EventSystems.end());
+	return it != m_EventSystems.end() ? it->second : NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 void CUIManager::ProcessViewParams(const SViewParams &viewParams)
 {
-	m_pHUD3D->UpdateView(viewParams);
-	m_pUIEntityDynTexTag->UpdateView(viewParams);
+	TUIEventSystems::const_iterator it = m_EventSystems.begin();
+	TUIEventSystems::const_iterator end = m_EventSystems.end();
+	for (;it != end; ++it)
+	{
+		it->second->UpdateView(viewParams);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +180,12 @@ void CUIManager::LoadProfile()
 		return;
 	}
 
-	m_pUIMultiPlayer->LoadProfile( pProfile );
-	m_pUISettings->LoadProfile( pProfile );
+	TUIEventSystems::const_iterator it = m_EventSystems.begin();
+	TUIEventSystems::const_iterator end = m_EventSystems.end();
+	for (;it != end; ++it)
+	{
+		it->second->LoadProfile(pProfile);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -156,8 +198,12 @@ void CUIManager::SaveProfile()
 		return;
 	}
 
-	m_pUIMultiPlayer->SaveProfile( pProfile );
-	m_pUISettings->SaveProfile( pProfile );
+	TUIEventSystems::const_iterator it = m_EventSystems.begin();
+	TUIEventSystems::const_iterator end = m_EventSystems.end();
+	for (;it != end; ++it)
+	{
+		it->second->SaveProfile(pProfile);
+	}
 }
 
 IPlayerProfile* CUIManager::GetCurrentProfile()

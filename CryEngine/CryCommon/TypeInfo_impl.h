@@ -71,7 +71,7 @@
 
 	#define STRUCT_INFO_EMPTY_BODY(T)						\
 		{																					\
-			static CStructInfo Info(#T, sizeof(T));	\
+			static CStructInfo Info(#T, sizeof(*this));	\
 			return Info;														\
 		}																					\
 
@@ -104,7 +104,7 @@
 
 	#define STRUCT_INFO_END(T) \
 			}; \
-			static CStructInfo Info(#T, sizeof(T), ARRAY_VAR(Vars)); \
+			static CStructInfo Info(#T, sizeof(*this), ARRAY_VAR(Vars)); \
 			return Info; \
 		}
 
@@ -145,7 +145,7 @@
 
 	#define STRUCT_INFO_T_END(T, Key, Arg) \
 			}; \
-			static CStructInfo Info(#T "<>", sizeof(T<Arg>), ARRAY_VAR(Vars), TypeInfoArray1((Arg*)0));	\
+			static CStructInfo Info(#T "<>", sizeof(*this), ARRAY_VAR(Vars), TypeInfoArray1((Arg*)0));	\
 			return Info; \
 		}
 
@@ -157,7 +157,7 @@
 	#define STRUCT_INFO_T2_END(T, Key1, Arg1, Key2, Arg2) \
 			}; \
 			static CTypeInfo const* TemplateTypes[] = { &::TypeInfo((Arg1*)0), &::TypeInfo((Arg2*)0) }; \
-			static CStructInfo Info(#T "<>", sizeof(T<Arg1,Arg2>), ARRAY_VAR(Vars), ARRAY_VAR(TemplateTypes)); \
+			static CStructInfo Info(#T "<,>", sizeof(*this), ARRAY_VAR(Vars), ARRAY_VAR(TemplateTypes)); \
 			return Info; \
 		}
 

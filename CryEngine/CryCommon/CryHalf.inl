@@ -214,6 +214,11 @@ struct CryHalf2
 		return *this;
 	}
 
+	bool operator !=(const CryHalf2& rhs) const
+	{
+		return x != rhs.x || y != rhs.y;
+	}
+
 	void GetMemoryUsage(ICrySizer* pSizer) const {}
 
 	AUTO_STRUCT_INFO

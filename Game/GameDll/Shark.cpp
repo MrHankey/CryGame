@@ -394,13 +394,13 @@ void CShark::PrePhysicsUpdate()
 			//send the movement request to the animated character
 			if (m_pAnimatedCharacter)
 			{
-				// synthesize a prediction
-				m_moveRequest.prediction.nStates = 1;
-				m_moveRequest.prediction.states[0].deltatime = 0.0f;
-				m_moveRequest.prediction.states[0].velocity = m_moveRequest.velocity;
-				m_moveRequest.prediction.states[0].position = pEnt->GetWorldPos();
-				m_moveRequest.prediction.states[0].orientation = pEnt->GetWorldRotation();
-				//m_moveRequest.prediction.states[0].rotation.SetIdentity();
+				//// synthesize a prediction
+				//m_moveRequest.prediction.nStates = 1;
+				//m_moveRequest.prediction.states[0].deltatime = 0.0f;
+				//m_moveRequest.prediction.states[0].velocity = m_moveRequest.velocity;
+				//m_moveRequest.prediction.states[0].position = pEnt->GetWorldPos();
+				//m_moveRequest.prediction.states[0].orientation = pEnt->GetWorldRotation();
+				////m_moveRequest.prediction.states[0].rotation.SetIdentity();
 
 				assert(m_moveRequest.rotation.IsValid());
 				assert(m_moveRequest.velocity.IsValid());

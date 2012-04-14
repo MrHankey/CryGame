@@ -16,43 +16,9 @@ History:
 #include "WeaponAttachmentManager.h"
 #include "Actor.h"
 #include "Item.h"
+#include "IValidator.h"
 
-
-#define MAX_WEAPON_ATTACHMENTS 2 
-
-//Bone & Attachment table (This should be in a nice file!!)
-namespace
-{
-	const char gBoneTable[MAX_WEAPON_ATTACHMENTS][32] =
-	{
-		"Bip01 Spine2",
-		"Bip01 Spine2"
-		//"weaponPos_pistol_R_leg",
-		//"weaponPos_pistol_L_leg"
-	};
-	const char gAttachmentTable[MAX_WEAPON_ATTACHMENTS][32] = 
-	{
-		"back_item_attachment_01",
-		"back_item_attachment_02"
-		//"pistol_attachment_right",
-		//"pistol_attachment_left"
-	};
-	const Vec3 gOffsetTable[MAX_WEAPON_ATTACHMENTS] = 
-	{
-		Vec3(0.21944635f,-0.14831634f,1.3135500f),
-		Vec3(-0.18169385f,-0.15057199f,1.4539498f)
-		//Vec3(0,0,0),
-		//Vec3(0,0,0)
-	};
-	const Quat gRotationTable[MAX_WEAPON_ATTACHMENTS] =
-	{
-		Quat(-0.53083998f, 0.42361471f,0.54312921f,-0.49373195f),
-		Quat(0.53463978f,-0.41727185f,0.52943635f,-0.50965005f)
-		//Quat(Quat::CreateIdentity()),
-		//Quat(Quat::CreateIdentity())
-	};
-	
-}
+#define WEAPON_ATTACHMENTS_FILE "Scripts/Entities/Items/XML/WeaponAttachments.xml"
 
 CWeaponAttachmentManager::CWeaponAttachmentManager(CActor* _pOwner):
 m_pOwner(_pOwner),
@@ -77,75 +43,149 @@ bool CWeaponAttachmentManager::Init()
 	m_pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
 
 	CreatePlayerBoneAttachments();
-	CreatePlayerProjectedAttachments();
 
 	return true;
+}
+
+void CWeaponAttachmentManager::RemoveAttachments()
+{
+	if (ICharacterInstance* pCharInstance = m_pOwner->GetEntity()->GetCharacter(0))
+	{
+		IAttachmentManager* pAttachmentManager = pCharInstance->GetIAttachmentManager(); 
+
+		if(pAttachmentManager == NULL)
+			return;
+
+		TBoneAttachmentMap::iterator fi;
+		for (fi=m_boneAttachmentMap.begin();fi!=m_boneAttachmentMap.end();++fi)
+		{
+			pAttachmentManager->RemoveAttachmentByName(fi->first);
+		}
+	}
 }
 
 //======================================================================
 void CWeaponAttachmentManager::CreatePlayerBoneAttachments()
 {
-		
 	if (ICharacterInstance* pCharInstance = m_pOwner->GetEntity()->GetCharacter(0))
 	{
 		IAttachmentManager* pAttachmentManager = pCharInstance->GetIAttachmentManager(); 
-		IAttachment *pAttachment = NULL;
-		
-		for(int i=0; i<MAX_WEAPON_ATTACHMENTS; i++)
+
+		if(pAttachmentManager == NULL)
+			return;
+
+		const XmlNodeRef rootNode = gEnv->pSystem->LoadXmlFromFile( WEAPON_ATTACHMENTS_FILE );
+
+		if (!rootNode || strcmpi(rootNode->getTag(), "WeaponAttachments"))
 		{
-			pAttachment = pAttachmentManager->GetInterfaceByName(gAttachmentTable[i]);
-			if(!pAttachment)
+			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Could not load Weapon Attachments data. Invalid XML file '%s'! ", WEAPON_ATTACHMENTS_FILE);
+			return;
+		}
+
+		IAttachment *pAttachment = NULL;
+		const int childCount = rootNode->getChildCount();
+
+		for (int i = 0; i < childCount; ++i)
+		{
+			XmlNodeRef weaponAttachmentNode = rootNode->getChild(i);
+
+			if(weaponAttachmentNode == (IXmlNode*)NULL)
+				continue;
+
+			const char* attachmentName = "";
+			weaponAttachmentNode->getAttr("name", &attachmentName);
+
+			if(!strcmp(attachmentName, ""))
 			{
-				//Attachment doesn't exist, create it
-				pAttachment = pAttachmentManager->CreateAttachment(gAttachmentTable[i],CA_BONE,gBoneTable[i]);
-				if(pAttachment)
+				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Empty Weapon Attachment name in file: %s! Skipping Weapon Attachment.", WEAPON_ATTACHMENTS_FILE);
+				continue;
+			}
+
+			pAttachment = pAttachmentManager->GetInterfaceByName(attachmentName);
+
+			if(pAttachment)
+			{
+				continue;
+			}
+
+			//Attachment doesn't exist, create it
+			const int weaponAttachmentCount = weaponAttachmentNode->getChildCount();
+			const char* boneName = "";
+			Vec3 attachmentOffset(ZERO);
+			Ang3 attachmentRotation(ZERO);
+
+			for (int i = 0; i < weaponAttachmentCount; ++i)
+			{
+				const XmlNodeRef childNode = weaponAttachmentNode->getChild(i);
+
+				if(childNode == (IXmlNode*)NULL)
+					continue;
+
+				if(!strcmp(childNode->getTag(), "Bone"))
 				{
-					m_boneAttachmentMap.insert(TBoneAttachmentMap::value_type(gAttachmentTable[i],0));
-					if(pAttachment && !gOffsetTable[i].IsZero())
-					{
-						pAttachment->SetAttAbsoluteDefault( QuatT(gRotationTable[i],gOffsetTable[i]) );
-						pAttachment->ProjectAttachment();
-					}
+					childNode->getAttr("name", &boneName);
+				}
+				else if(!strcmp(childNode->getTag(), "Offset"))
+				{
+					childNode->getAttr("x", attachmentOffset.x); 
+					childNode->getAttr("y", attachmentOffset.y);
+					childNode->getAttr("z", attachmentOffset.z);
+				}
+				else if(!strcmp(childNode->getTag(), "Rotation"))
+				{
+					float value = 0.0f;
+					childNode->getAttr("x", value); 
+					attachmentRotation.x = DEG2RAD(value);
+
+					childNode->getAttr("y", value);
+					attachmentRotation.y = DEG2RAD(value);
+
+					childNode->getAttr("z", value);
+					attachmentRotation.z = DEG2RAD(value);
 				}
 			}
-		}
 
-	}
+			const char* attachmentType = "";
+			weaponAttachmentNode->getAttr("type", &attachmentType);
 
-}
-
-//=======================================================================
-void CWeaponAttachmentManager::CreatePlayerProjectedAttachments()
-{
-
-	Vec3 c4FrontPos(-0.0105f,0.2233f,1.297f),c4BackPos(0.00281f,-0.2493f,1.325f);
-	Quat c4FrontRot(-0.0368f,-0.0278f,0.0783f,-0.9958f),c4BackRot(1,0,0,0);
-	//Creates on init c4 face attachments
-	if (ICharacterInstance* pCharInstance = m_pOwner->GetEntity()->GetCharacter(0))
-	{
-		IAttachmentManager* pAttachmentManager = pCharInstance->GetIAttachmentManager(); 
-		IAttachment *pAttachment = NULL;
-		pAttachment = pAttachmentManager->GetInterfaceByName("c4_front");
-		if(!pAttachment)
-		{
-			//Attachment doesn't exist, create it
-			pAttachment= pAttachmentManager->CreateAttachment("c4_front",CA_FACE,0);
-			if(pAttachment)
+			if(!strcmp(attachmentType, ""))
 			{
-				pAttachment->SetAttAbsoluteDefault( QuatT(c4FrontRot,c4FrontPos) );
-				pAttachment->ProjectAttachment();
+				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "No Weapon Attachment type assigned! Skipping Weapon Attachment: %s", attachmentName);
+				continue;
 			}
-		}
-		pAttachment = NULL;
-		pAttachment = pAttachmentManager->GetInterfaceByName("c4_back");
-		if(!pAttachment)
-		{
-			//Attachment doesn't exist, create it
-			pAttachment= pAttachmentManager->CreateAttachment("c4_back",CA_FACE,0);
+
+			const bool isBoneAttachment = !strcmp(attachmentType, "Bone");
+			const bool isFaceAttachment = !strcmp(attachmentType, "Face");
+
+			//Bone attachment needs the bone name
+			if (!strcmp(boneName, "") && isBoneAttachment)
+			{
+				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Bone Attachment with no bone name assigned! Skipping Weapon Attachment: %s", attachmentName);
+				continue;
+			}
+
+			if(isBoneAttachment)
+			{
+				pAttachment = pAttachmentManager->CreateAttachment(attachmentName, CA_BONE, boneName);
+			}
+			else if(isFaceAttachment)
+			{
+				pAttachment = pAttachmentManager->CreateAttachment(attachmentName, CA_FACE, 0);
+			}
+			
 			if(pAttachment)
 			{
-				pAttachment->SetAttAbsoluteDefault( QuatT(c4BackRot,c4BackPos) );
-				pAttachment->ProjectAttachment();
+				if(isBoneAttachment)
+					m_boneAttachmentMap.insert(TBoneAttachmentMap::value_type(attachmentName,0));
+
+				if(pAttachment && !attachmentOffset.IsZero())
+				{
+					QuatT attachmentQuat(IDENTITY);
+					attachmentQuat.SetRotationXYZ(attachmentRotation, attachmentOffset);
+
+					pAttachment->SetAttAbsoluteDefault( attachmentQuat );
+					pAttachment->ProjectAttachment();
+				}
 			}
 		}
 	}

@@ -35,6 +35,7 @@
 struct IFlowSystem;
 struct IGameTokenSystem;
 struct IEffectSystem;
+struct IBreakableGlassSystem;
 struct IForceFeedbackSystem;
 
 class CAINetworkDebugRenderer;
@@ -180,6 +181,7 @@ public:
 	VIRTUAL IGameTokenSystem *GetIGameTokenSystem();
 	VIRTUAL IEffectSystem *GetIEffectSystem();
 	VIRTUAL IMaterialEffects *GetIMaterialEffects();
+	VIRTUAL IBreakableGlassSystem *GetIBreakableGlassSystem();
 	VIRTUAL IPlayerProfileManager *GetIPlayerProfileManager();
 	VIRTUAL ISubtitleManager *GetISubtitleManager();
 	VIRTUAL IDialogSystem *GetIDialogSystem();
@@ -285,7 +287,6 @@ public:
 
 	VIRTUAL ISharedParamsManager *GetISharedParamsManager();
 	VIRTUAL float GetLoadSaveDelay()const {return m_lastSaveLoad;}
-
 	// ~IGameFramework
 
 	static CCryAction * GetCryAction() { return m_pThis; }
@@ -531,6 +532,7 @@ private:
 	CScriptRMI        *m_pScriptRMI;
 	CAnimationGraphManager * m_pAnimationGraphManager;
 	CMaterialEffects *m_pMaterialEffects;
+	IBreakableGlassSystem	*m_pBreakableGlassSystem;
 	CPlayerProfileManager *m_pPlayerProfileManager;
 	CDialogSystem     *m_pDialogSystem;
 	IDebrisMgr				*m_pDebrisMgr;

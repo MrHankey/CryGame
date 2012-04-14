@@ -1059,6 +1059,37 @@ enum ETriState
 #endif
 #include "MultiThread.h"
 
+	//////////////////////////////////////////////////////////////////////////
+	// Facilities for collecting options in a struct, and quickly constructing them.
+	// Used, for example, as construction argument. Safer and more informative than bool arguments.
+	//
+	// Example:
+	//		struct FObjectOpts;
+	//		struct CObject { CObject(FObjectOpts = ZERO); };
+	//		CObject object_def();
+	//		CObject object( FObjectOpts().Size(8).AllowGrowth(true) );
+
+#define OPT_STRUCT(Struc) \
+	typedef Struc TThis; \
+	Struc(type_zero z = ZERO) { ZeroStruct(*this); }
+
+#define VAR_OPT(Type, Var) \
+	Type _##Var; \
+	Type const& Var() const { return _##Var; } \
+	TThis& Var(Type const& val) { _##Var = val; return *this; }
+
+#define BIT_STRUCT(Struc,Int) \
+	typedef Struc TThis; typedef Int TInt; \
+	TInt Mask() const { return *(const TInt*)this; } \
+	TInt& Mask() { return *(TInt*)this; } \
+	Struc(TInt init = 0) { COMPILE_TIME_ASSERT(sizeof(TThis) == sizeof(TInt)); Mask() = init; }
+
+#define BIT_OPT(Var) \
+	TInt _##Var: 1; \
+	TInt Var() const { return _##Var; } \
+	TThis& Var(TInt val) { _##Var = val; return *this; }
+
+
 //////////////////////////////////////////////////////////////////////////
 // Include most commonly used STL headers
 // They end up in precompiled header and make compilation faster.

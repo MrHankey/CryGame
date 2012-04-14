@@ -614,7 +614,7 @@ inline void	CCamera::SetFrustum(int nWidth,int nHeight, f32 FOV, f32 nearplane,f
 	assert (nearplane>0.001f);		//check if near-plane is valid
 	assert (farpane>0.1f);				//check if far-plane is valid
 	assert (farpane>nearplane);		//check if far-plane bigger then near-plane
-  assert (FOV>=0.000001f && FOV<gf_PI);		  //check if specified FOV is valid
+  assert (FOV>=0.0000001f && FOV<gf_PI);		  //check if specified FOV is valid
 
 	m_fov = FOV;
 	

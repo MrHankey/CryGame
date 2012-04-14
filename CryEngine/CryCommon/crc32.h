@@ -45,7 +45,7 @@ protected:
   bool m_bInited;
 
 	void init_CRC32_Table();  //!< Builds lookup table array 
-	unsigned int reflect( unsigned int ref, char ch); //!< Reflects CRC bits in the lookup table 
+	unsigned int reflect( unsigned int ref, char ch) const; //!< Reflects CRC bits in the lookup table 
 	unsigned int get_CRC32( const char *data,int size,unsigned int ulCRC ) const;
 	unsigned int get_CRC32Lowercase( const char *data,int size,unsigned int ulCRC ) const;
 
@@ -128,7 +128,7 @@ inline Crc32Gen::Crc32Gen()
   Init();
 }
 
-inline unsigned int Crc32Gen::reflect(unsigned int ref, char ch)
+inline unsigned int Crc32Gen::reflect(unsigned int ref, char ch) const
 {// Used only by Init_CRC32_Table().
 	unsigned int value = 0;
 

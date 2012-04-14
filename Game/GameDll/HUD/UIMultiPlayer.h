@@ -14,20 +14,22 @@
 #ifndef __UIMultiPlayer_H__
 #define __UIMultiPlayer_H__
 
+#include "IUIGameEventSystem.h"
 #include <IFlashUI.h>
-#include <IPlayerProfiles.h>
 
 class CUIMultiPlayer 
-	: public IUIEventListener
+	: public IUIGameEventSystem
 	, public IUIModule
 {
 public:
 	CUIMultiPlayer();
-	virtual ~CUIMultiPlayer();
 
-	// IUIEventListener
-	virtual void OnEvent(const SUIEvent& event);
-	// ~IUIEventListener
+	// IUIGameEventSystem
+	UIEVENTSYSTEM( "UIMultiPlayer" );
+	virtual void InitEventSystem();
+	virtual void UnloadEventSystem();
+	virtual void LoadProfile( IPlayerProfile* pProfile );
+	virtual void SaveProfile( IPlayerProfile* pProfile ) const;
 
 	// IUIModule
 	virtual void Reset();
@@ -40,26 +42,19 @@ public:
 	void PlayerKilled(EntityId playerid, EntityId shooterid);
 	void PlayerRenamed(EntityId playerid, const string& newName);
 
-	void LoadProfile(IPlayerProfile* pProfile);
-	void SaveProfile(IPlayerProfile* pProfile);
-
 private:
 	// UI events
-	void RequestPlayers( const SUIEvent& event );
-	void GetPlayerName( const SUIEvent& event );
-	void SetPlayerName( const SUIEvent& event );
-	void ConnectToServer( const SUIEvent& event );
-	void GetServerName( const SUIEvent& event );
+	void RequestPlayers();
+	void GetPlayerName();
+	void SetPlayerName( const string& newname );
+	void ConnectToServer( const string& server );
+	void GetServerName();
 
 
 	void SubmitNewName();
 	string GetPlayerNameById( EntityId playerid );
 
 private:
-	static SUIEventHelper<CUIMultiPlayer> s_EventDispatcher;
-	IUIEventSystem* m_pUIEvents;
-	IUIEventSystem* m_pUIFunctions;
-
 	enum EUIEvent
 	{
 		eUIE_EnteredGame,
@@ -71,7 +66,10 @@ private:
 		eUIE_SendServer,
 	};
 
-	std::map< EUIEvent, uint > m_EventMap;
+	SUIEventReceiverDispatcher<CUIMultiPlayer> m_eventDispatcher;
+	SUIEventSenderDispatcher<EUIEvent> m_eventSender;
+	IUIEventSystem* m_pUIEvents;
+	IUIEventSystem* m_pUIFunctions;
 
 	struct SPlayerInfo
 	{

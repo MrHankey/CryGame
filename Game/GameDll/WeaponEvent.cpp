@@ -7,7 +7,7 @@ $DateTime$
 
 -------------------------------------------------------------------------
 History:
-- 9:12:2005   10:50 : Created by Márcio Martins
+- 9:12:2005   10:50 : Created by Marcio Martins
 
 *************************************************************************/
 #include "StdAfx.h"
@@ -24,8 +24,6 @@ History:
 #include "Audio/BattleStatus.h"
 
 #include "ItemSharedParams.h"
-
-#include "ILog.h"
 
 CWeapon::TEventListenerVector * CWeapon::m_listenerCache = 0;
 bool CWeapon::m_listenerCacheInUse = false;
@@ -51,8 +49,6 @@ bool CWeapon::m_listenerCacheInUse = false;
 void CWeapon::OnShoot(EntityId shooterId, EntityId ammoId, IEntityClass* pAmmoType, const Vec3 &pos, const Vec3 &dir, const Vec3&vel)
 {
 	BROADCAST_WEAPON_EVENT(OnShoot, (this, shooterId, ammoId, pAmmoType, pos, dir, vel));
-
-	gEnv->pLog->Log("Ammo id: %d\n", ammoId);
 
 	//FIXME:quick temporary solution
 	CActor *pActor = static_cast<CActor*> (g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId));
@@ -212,6 +208,8 @@ void CWeapon::OnPickedUp(EntityId actorId, bool destroyed)
 		for (TAccessoryMap::iterator it=m_accessories.begin(); it!=m_accessories.end(); ++it)
 			FixAccessories(GetAccessoryParams(it->first), true);
 	}
+
+	m_expended_ammo = 0;
 }
 
 //------------------------------------------------------------------------
@@ -223,6 +221,8 @@ void CWeapon::OnDropped(EntityId actorId)
 
 	GetEntity()->SetFlags(GetEntity()->GetFlags() & ~ENTITY_FLAG_NO_PROXIMITY);
 	GetEntity()->SetFlags(GetEntity()->GetFlags() | ENTITY_FLAG_ON_RADAR);
+
+	m_expended_ammo = 0;
 }
 
 

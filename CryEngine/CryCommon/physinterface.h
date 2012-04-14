@@ -1014,12 +1014,15 @@ struct pe_action_add_constraint : pe_action {
 
 struct pe_action_update_constraint : pe_action {
 	enum entype { type_id=6 };
-	pe_action_update_constraint() { type=type_id; MARK_UNUSED idConstraint,pt[0],pt[1]; flagsOR=0;flagsAND=(unsigned int)-1;bRemove=0; flags=world_frames; }
+	pe_action_update_constraint() { type=type_id; MARK_UNUSED idConstraint,pt[0],pt[1],qframe[0],qframe[1],maxPullForce,maxBendTorque; 
+		flagsOR=0;flagsAND=(unsigned int)-1;bRemove=0; flags=world_frames; }
 	int idConstraint;	// doesn't have to be unique - can update several constraints with one id; if not set, updates all constraints
 	unsigned int flagsOR;
 	unsigned int flagsAND;
 	int bRemove; // permanently delete the constraint
 	Vec3 pt[2];	// local_frames_part is not supported currently
+	quaternionf qframe[2]; // update to constraint frames
+	float maxPullForce,maxBendTorque; 
 	int flags; // generally it's better to use flagsOR and/or flagsAND
 };
 
@@ -2864,6 +2867,7 @@ UNIQUE_IFACE struct IPhysicalWorld {
 	virtual int FlushDynPool() = 0;
 
 	virtual EventPhys *AddDeferredEvent( int type, EventPhys *event ) = 0;
+	virtual int CallEventClients(EventPhys *pEvent, int bLogged, float minPriority = 0.0f) = 0;
 };
 
 #endif

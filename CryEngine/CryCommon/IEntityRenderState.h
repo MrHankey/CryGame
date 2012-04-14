@@ -38,7 +38,7 @@ enum EERType
   eERType_LightPropagationVolume,
   eERType_RenderProxy,
   eERType_GameEffect,
-  eERType_Unused,				// please add next ertype here then remove this comment
+  eERType_BreakableGlass,
   eERType_LightShape,
   eERType_Decal2,
   eERType_TypesNum, // MUST BE AT END TOTAL NUMBER OF ERTYPES
@@ -162,17 +162,26 @@ struct IShadowCaster
 
 struct IOctreeNode 
 {
+public:
+	struct CTerrainNode* GetTerrainNode() const { return (CTerrainNode*) (m_pTerrainNode & ~0x1); }
+	void SetTerrainNode(struct CTerrainNode* node) { m_pTerrainNode = (m_pTerrainNode & 0x1) | ((INT_PTR) node); }
+
+// If true - this node needs to be recompiled for example update nodes max view distance.
+	bool IsCompiled() const { return (bool) (m_pTerrainNode & 0x1); }
+	void SetCompiled(bool compiled) { m_pTerrainNode = ((int) compiled) | (m_pTerrainNode & ~0x1); }
+
   struct CVisArea * m_pVisArea;
-  struct CTerrainNode * m_pTerrainNode;
-  bool m_bCompiled;						// If true - this node needs to be recompiled for example update nodes max view distance.
+
+private:
+	INT_PTR m_pTerrainNode;
 };
 
-struct SDissolveTransitionState
+struct SLodDistDissolveTransitionState
 {
-  float fStartTime;
-  float fStartVal;
-  float fEndVal;
-  float fCurrVal;
+  float fStartDist;
+	int8 nOldLod;
+	int8 nNewLod;
+	bool bFarside;
 };
 
 struct SLightInfo
@@ -330,7 +339,7 @@ struct IRenderNode : public IShadowCaster
 
   // Returns:
   //   Current VisArea or null if in outdoors or entity was not registered in 3dengine.
-  struct CTerrainNode * GetEntityTerrainNode() const { return (m_pOcNode && !m_pOcNode->m_pVisArea) ? m_pOcNode->m_pTerrainNode : NULL; }
+  struct CTerrainNode * GetEntityTerrainNode() const { return (m_pOcNode && !m_pOcNode->m_pVisArea) ? m_pOcNode->GetTerrainNode() : NULL; }
 
   // Description:
   //	Allows to adjust default max view distance settings, 
@@ -342,7 +351,7 @@ struct IRenderNode : public IShadowCaster
     {
       m_ucViewDistRatio = nViewDistRatio; 
       if(m_pOcNode) 
-        m_pOcNode->m_bCompiled = false; 
+        m_pOcNode->SetCompiled(false); 
     }
   }
 
@@ -549,14 +558,16 @@ UNIQUE_IFACE struct IBrush : public IRenderNode
 struct SVegetationSpriteInfo
 {
   Sphere sp;
-  float fMaxViewDistSq;
   float fScaleH;
   float fScaleV;
   struct SSectorTextureSet * pTerrainTexInfo;
   struct SVegetationSpriteLightInfo * pLightInfo;
-  float fAmbientValue;
   uint8 ucSunDotTerrain;
   uint8 ucAlphaTestRef;
+	uint8 ucDissolveOut;
+  uint8 ucShow3DModel;
+
+	ColorB terrainColor;
 
   // Used only in case of sprite texture update.
   uint8 ucSlotId;
@@ -568,7 +579,7 @@ struct SVegetationSpriteInfo
   void GetMemoryUsage( ICrySizer *pSizer ) const {/*nothing*/}
 };
 
-const int FAR_TEX_COUNT = 24;							// Number of sprites per object
+const int FAR_TEX_COUNT = 12;							// Number of sprites per object
 const int FAR_TEX_ANGLE = (360/FAR_TEX_COUNT);
 const int FAR_TEX_HAL_ANGLE = (256/FAR_TEX_COUNT)/2;
 
@@ -576,47 +587,25 @@ const int FAR_TEX_HAL_ANGLE = (256/FAR_TEX_COUNT)/2;
 //	 Groups sprite gen data.
 struct SVegetationSpriteLightInfo
 {
-  SVegetationSpriteLightInfo() { m_vSunDir = m_vSunColor = m_vSkyColor = Vec3(0,0,0); m_BrightnessMultiplier=0; m_MipFactor=0.0f; }
+  SVegetationSpriteLightInfo() { m_vSunDir = Vec3(0,0,0); m_MipFactor=0.0f; }
 
-  Vec3			m_vSunColor;
-  Vec3			m_vSkyColor;
-  uint8			m_BrightnessMultiplier;		// Needed to allow usage of 8bit texture for HDR, computed by ComputeSpriteBrightnessMultiplier() .
   float			m_MipFactor;
   IDynTexture * m_pDynTexture;
 
   // -----------------------------------------
 
-  void SetLightingData( const Vec3 &vSunDir, const Vec3 &vSunColor, const Vec3 &vSkyColor )
+  void SetLightingData( const Vec3 &vSunDir )
   {
     m_vSunDir=vSunDir;
-    m_vSunColor=vSunColor;
-    m_vSkyColor=vSkyColor;
-    ComputeSpriteBrightnessMultiplier();
   }
 
   // Notes:
   //	 vSunDir should be normalized.
-  bool IsEqual( const Vec3 &vSunDir, const Vec3 &vSunColor, const Vec3 &vSkyColor, const float fDirThreshold, const float fColorThreshold ) const
+  bool IsEqual( const Vec3 &vSunDir, const float fDirThreshold ) const
   {
-    return IsEquivalent(m_vSunDir,vSunDir,fDirThreshold)
-      && IsEquivalent(m_vSunColor,vSunColor,fColorThreshold)
-      && IsEquivalent(m_vSkyColor,vSkyColor,fColorThreshold);
+    return IsEquivalent(m_vSunDir,vSunDir,fDirThreshold);
   }
 
-  void ComputeSpriteBrightnessMultiplier()
-  {
-    float fMax = max(m_vSunColor.x+m_vSkyColor.x,max(m_vSunColor.y+m_vSkyColor.y,m_vSunColor.z+m_vSkyColor.z));
-
-    m_BrightnessMultiplier = (uint8)min((uint32)255,(uint32)(fMax*(255.0f/10.0f)+0.5f));		// 10.0f allows 10x brightness
-
-    if(m_BrightnessMultiplier==0)
-      m_BrightnessMultiplier=1;			// to avoid div by 0 in later code when sun is too dark
-  }
-
-  float GetSpriteBrightnessMultiplier() const
-  {
-    return m_BrightnessMultiplier*(10.0f/255.0f);		// 10.0f allows 10x brightness
-  }
 
 private: // --------------------------------------------------------
 
@@ -677,6 +666,31 @@ UNIQUE_IFACE struct IRoadRenderNode : public IRenderNode
   virtual void SetIgnoreTerrainHoles(bool bVal) = 0;
   virtual void GetClipPlanes(Plane * pPlanes, int nPlanesNum, int nVertId=0) = 0;
   virtual void GetTexCoordInfo(float * pTexCoordInfo) = 0;
+};
+
+// Summary:
+//	 IBreakableGlassRenderNode is an interface to the Breakable Glass Render Node object.
+struct SBreakableGlassInitParams;
+struct SBreakableGlassUpdateParams;
+struct SBreakableGlassState;
+struct SBreakableGlassCVars;
+struct SGlassPhysFragment;
+
+UNIQUE_IFACE struct IBreakableGlassRenderNode : public IRenderNode
+{
+	virtual bool		InitialiseNode(const SBreakableGlassInitParams& params, const Matrix34& matrix) = 0;
+	virtual void		SetId(const uint16 id) = 0;
+	virtual uint16	GetId() = 0;
+
+	virtual void		Update(SBreakableGlassUpdateParams& params) = 0;
+	virtual bool		HasGlassShattered() = 0;
+	virtual bool		HasActiveFragments() = 0;
+	virtual void		ApplyImpactToGlass(const EventPhysCollision* pPhysEvent) = 0;
+	virtual void		ApplyExplosionToGlass(const EventPhysCollision* pPhysEvent) = 0;
+
+	virtual void		DestroyPhysFragment(SGlassPhysFragment* pPhysFrag) = 0;
+
+	virtual void		SetCVars(const SBreakableGlassCVars* pCVars) = 0;
 };
 
 const int IVOXELOBJECT_FLAG_LINK_TO_TERRAIN = 1;
@@ -940,7 +954,7 @@ UNIQUE_IFACE struct IRopeRenderNode : public IRenderNode
     float fAnchorRadius;
 
     //////////////////////////////////////////////////////////////////////////
-    // Rendering/Tesselation.
+    // Rendering/Tessellation.
     //////////////////////////////////////////////////////////////////////////
 
     int nNumSegments;

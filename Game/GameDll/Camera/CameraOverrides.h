@@ -9,7 +9,7 @@ When the camera settings are overridden, a completely different camera can
 be active without interfering with the flowgraph at all.
 -------------------------------------------------------------------------
 History:
-- 25:08:2008: Created by Jan Müller
+- 25:08:2008: Created by Jan Mueller
 
 *************************************************************************/
 

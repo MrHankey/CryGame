@@ -7,7 +7,7 @@
 
 	-------------------------------------------------------------------------
 	History:
-		- 7:2:2006   15:38 : Created by Márcio Martins
+		- 7:2:2006   15:38 : Created by Marcio Martins
 
 *************************************************************************/
 #include "StdAfx.h"
@@ -42,7 +42,9 @@
 #include <StringUtils.h>
 
 #include "HitDeathReactionsSystem.h"
+#include "HitDeathReactions.h"
 #include "CustomReactionFunctions.h"
+#include <IBreakableManager.h>
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;
@@ -1100,11 +1102,6 @@ void CGameRules::KillPlayer(IActor* pActor, const bool inDropItem, const bool in
 
 	pActor->GetInventory()->Destroy();
 
-	if (inDoRagdoll)
-		pActor->GetGameObject()->SetAspectProfile(eEA_Physics, eAP_Ragdoll);
-
-	pCActor->NetKill(inHitInfo.shooterId, weaponClassId, (int)inHitInfo.damage, inHitInfo.material, inHitInfo.type);
-
 	CActor::KillParams params;
 	params.shooterId = inHitInfo.shooterId;
 	params.targetId = inHitInfo.targetId;
@@ -1125,6 +1122,17 @@ void CGameRules::KillPlayer(IActor* pActor, const bool inDropItem, const bool in
 	params.impulseScale = inHitInfo.impulseScale; 
 	params.ragdoll = inDoRagdoll;
 	params.penetration = inHitInfo.penetrationCount;
+
+	CHitDeathReactionsPtr pHitDeathReactions = static_cast<CPlayer*>(pActor)->GetHitDeathReactions();
+	if (g_pGameCVars->g_hitDeathReactions_enable && pHitDeathReactions)
+	{
+		params.ragdoll = !pHitDeathReactions->OnKill(params) && params.ragdoll;
+	}
+
+	if (params.ragdoll)
+		pActor->GetGameObject()->SetAspectProfile(eEA_Physics, eAP_Ragdoll);
+
+	pCActor->NetKill(inHitInfo.shooterId, weaponClassId, (int)inHitInfo.damage, inHitInfo.material, inHitInfo.type);
 
 	pActor->GetGameObject()->InvokeRMI(CActor::ClKill(),params,eRMI_ToAllClients|eRMI_NoLocalCalls);
 
@@ -2979,6 +2987,13 @@ EntityId CGameRules::SetChannelForMigratingPlayer(const char* name, uint16 chann
 void CGameRules::StoreMigratingPlayer(IActor* pActor)
 {
 }
+
+//------------------------------------------------------------------------
+bool CGameRules::IsClientFriendlyProjectile(const EntityId projectileId, const EntityId targetEntityId)
+{
+	return false;
+}
+
 //------------------------------------------------------------------------
 bool CGameRules::IsTimeLimited() const
 {

@@ -92,6 +92,7 @@ public _reference_target_t
 	virtual const char* GetVoiceLibraryName() const = 0;
 	virtual const char* GetCommunicationConfigName() const = 0;
 	virtual const char* GetBehaviorSelectionTreeName() const = 0;
+	virtual const char* GetNavigationTypeName() const = 0;
 
 	// Description:
 	//	 Needed for debug drawing.

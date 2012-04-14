@@ -46,6 +46,7 @@ struct IPhysicalEntity;
 struct IBreakEventListener;
 struct SRenderNodeCloneLookup;
 struct EventPhysRemoveEntityParts ;
+struct IBreakableManager;
 class CEntity;
 
 struct IEntityPoolManager;
@@ -104,6 +105,13 @@ UNIQUE_IFACE struct IAreaManager
 	// Return Value:
 	//	 True on success or false on error or if provided structure was too small.
 	virtual bool QueryAreas( Vec3 vPos, SAreaManagerResult *pResults, int nMaxResults) = 0;
+
+	// Description:
+	//	Query areas linked to other entities (these links are shape links)
+	//	fills out a list of entities and sets outAndMaxResults to the size of results
+	// Return Value:
+	//	Returns true if the array was large enough, or false if there was more then outAndMaxResults attached to the entity
+	virtual bool GetLinkedAreas(EntityId linkedId, EntityId* pOutArray, int &outAndMaxResults) const = 0;
 
 	virtual void DrawLinkedAreas(EntityId linkedId) const = 0;
 
@@ -224,125 +232,6 @@ struct IEntityEventListener
 {
 	virtual ~IEntityEventListener(){}
 	virtual void OnEntityEvent( IEntity *pEntity,SEntityEvent &event ) = 0;
-};
-
-// Forward declaration from physics interface.
-struct EventPhys;
-struct EventPhysRemoveEntityParts;
-
-//////////////////////////////////////////////////////////////////////////
-UNIQUE_IFACE struct IBreakableManager
-{
-	virtual ~IBreakableManager(){}
-	enum EBReakageType
-	{
-		BREAKAGE_TYPE_DESTROY = 0,
-		BREAKAGE_TYPE_FREEZE_SHATTER,
-	};
-	struct SBrokenObjRec
-	{
-		EntityId idEnt;
-		IRenderNode * pSrcRenderNode;
-		_smart_ptr<IStatObj> pStatObjOrg;
-	};
-	struct BreakageParams
-	{
-		EBReakageType type;					// Type of the breakage.
-		float	fParticleLifeTime;		// Average lifetime of particle pieces.
-		int		nGenericCount;				// If not 0, force particle pieces to spawn generically, this many times.
-		bool	bForceEntity;					// Force pieces to spawn as entities.
-		bool	bMaterialEffects;			// Automatically create "destroy" and "breakage" material effects on pieces.
-		bool	bOnlyHelperPieces;		// Only spawn helper pieces.
-
-		// Impulse params.
-		float	fExplodeImpulse;			// Outward impulse to apply.
-		Vec3	vHitImpulse;					// Hit impulse and center to apply.
-		Vec3	vHitPoint;
-
-		BreakageParams()
-		{
-			memset(this, 0, sizeof(*this));
-		}
-	};
-	struct SCreateParams
-	{
-		int nSlotIndex;
-		Matrix34 slotTM;
-		Matrix34 worldTM;
-		float fScale;
-		IMaterial *pCustomMtl;
-		int nMatLayers;
-		int nEntityFlagsAdd;
-		int nEntitySlotFlagsAdd;
-		int nRenderNodeFlags;
-		IRenderNode *pSrcStaticRenderNode;
-		const char *pName;
-		IEntityClass* overrideEntityClass;
-
-		SCreateParams() : fScale(1.0f),pCustomMtl(0),nSlotIndex(0),nRenderNodeFlags(0),pName(0),
-			nMatLayers(0),nEntityFlagsAdd(0),nEntitySlotFlagsAdd(0),pSrcStaticRenderNode(0), overrideEntityClass(NULL) { slotTM.SetIdentity(); worldTM.SetIdentity(); };
-	};
-	virtual void BreakIntoPieces( IEntity *pEntity, int nSlot, int nPiecesSlot, BreakageParams const& Breakage ) = 0;
-
-	// Summary:
-	//	 Attaches the effect & params specified by material of object in slot.
-	virtual void AttachSurfaceEffect( IEntity* pEntity, int nSlot, const char* sType, SpawnParams const& paramsIn, uint uEmitterFlags = 0 ) = 0;
-
-	// Summary:
-	//	 Checks if static object can be shattered, by checking it`s surface types.
-	virtual bool CanShatter( IStatObj *pStatObj ) = 0;
-
-	// Summary:
-	//	 Checks if entity can be shattered, by checking surface types of geometry or character.
-	virtual bool CanShatterEntity( IEntity *pEntity,int nSlot=-1 ) = 0;
-
-	virtual void FakePhysicsEvent( EventPhys * pEvent ) = 0;
-
-	virtual IEntity* CreateObjectAsEntity( IStatObj *pStatObj,IPhysicalEntity *pPhysEnt, IPhysicalEntity *pSrcPhysEnt, IBreakableManager::SCreateParams &createParams, bool bCreateSubstProxy=false ) = 0;
-
-	// Summary:
-	//	 Adds a break event listener
-	virtual void AddBreakEventListener(IBreakEventListener * pListener) = 0;
-
-	// Summary:
-	//	 Removes a break event listener
-	virtual void RemoveBreakEventListener(IBreakEventListener * pListener) = 0;
-
-	// Summary:
-	//	 Replays a RemoveSubPartsEvent
-	virtual void ReplayRemoveSubPartsEvent( const EventPhysRemoveEntityParts *pRemoveEvent ) = 0;
-
-	// Summary:
-	//	 Records that there has been a call to CEntity::DrawSlot() for later playback
-	virtual void EntityDrawSlot(CEntity * pEntity, int32 slot, int32 flags) = 0;
-
-	// Summary:
-	//	 Resets broken objects.
-	virtual void ResetBrokenObjects() = 0;
-
-	// Summary:
-	//		Returns a vector of broken object records
-	virtual const IBreakableManager::SBrokenObjRec * GetPartBrokenObjects(int& brokenObjectCount) = 0;
-
-	// Summary:
-	//		
-	virtual void GetBrokenObjectIndicesForCloning(int32 * pPartRemovalIndices, int32& iNumPartRemovalIndices,
-																								int32 * pOutIndiciesForCloning, int32& iNumEntitiesForCloning,
-																								const EventPhysRemoveEntityParts * BreakEvents) = 0;
-
-	virtual void ClonePartRemovedEntitiesByIndex(	int32 * pBrokenObjectIndices, int32 iNumBrokenObjectIndices,
-																								EntityId * pOutClonedEntities, int32& iNumClonedBrokenEntities,
-																								const EntityId * pRecordingEntities, int32 iNumRecordingEntities,
-																								SRenderNodeCloneLookup& nodeLookup) = 0;
-
-
-	virtual void HideBrokenObjectsByIndex( const int32 * pBrokenObjectIndices, const int32 iNumBrokenObjectIndices) = 0;
-	virtual void UnhidePartRemovedObjectsByIndex( const int32 * pPartRemovalIndices, const int32 iNumPartRemovalIndices, const EventPhysRemoveEntityParts * BreakEvents) = 0;
-	virtual void ApplySinglePartRemovalFromEventIndex(int32 iPartRemovalEventIndex, const SRenderNodeCloneLookup& renderNodeLookup, const EventPhysRemoveEntityParts * pBreakEvents) = 0;
-	virtual void ApplyPartRemovalsUntilIndexToObjectList( int32 iFirstEventIndex, const SRenderNodeCloneLookup& renderNodeLookup, const EventPhysRemoveEntityParts * pBreakEvents) = 0;
-
-	virtual struct ISurfaceType* GetFirstSurfaceType( IStatObj *pStatObj ) = 0;
-	virtual struct ISurfaceType* GetFirstSurfaceType( ICharacterInstance *pCharacter ) = 0;
 };
 
 // Summary:

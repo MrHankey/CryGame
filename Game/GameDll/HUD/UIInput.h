@@ -14,27 +14,27 @@
 #ifndef __UIInput_H__
 #define __UIInput_H__
 
-#include "IActionMapManager.h"
+#include "IUIGameEventSystem.h"
 #include <IFlashUI.h>
 #include <IPlatformOS.h>
+#include <IActionMapManager.h>
 
 class CUIInput 
-	: public IActionListener
-	, public IUIEventListener
+	: public IUIGameEventSystem
+	, public IActionListener
 	, public IVirtualKeyboardEvents
 {
 public:
-
 	CUIInput();
-	~CUIInput();
+
+	// IUIGameEventSystem
+	UIEVENTSYSTEM( "UIInput" );
+	virtual void InitEventSystem();
+	virtual void UnloadEventSystem();
 
 	// IActionListener
 	virtual void OnAction( const ActionId& action, int activationMode, float value );
 	// ~IActionListener
-
-	// IUIEventListener
-	virtual void OnEvent( const SUIEvent& event );
-	// ~IUIEventListener
 
 	// IVirtualKeyboardEvents
 	virtual void KeyboardCancelled();
@@ -42,15 +42,8 @@ public:
 	// ~IVirtualKeyboardEvents
 
 private:
-	enum EUIEvent
-	{
-		eUIE_OnVirtKeyboardDone,
-		eUIE_OnVirtKeyboardCancelled,
-	};
-	void NotifyUI(EUIEvent eventType, const SUIArguments& args = SUIArguments());
-
-	// ui functions
-	void OnDisplayVirtualKeyboard( const SUIEvent& event );
+	// ui events
+	void OnDisplayVirtualKeyboard( const wchar_t* title, const wchar_t* initialStr, int maxchars );
 
 	// actions
 	bool OnActionTogglePause(EntityId entityId, const ActionId& actionId, int activationMode, float value);
@@ -65,10 +58,18 @@ private:
 	bool OnActionReset(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 
 private:
-	static TActionHandler<CUIInput>	s_actionHandler;
-	static SUIEventHelper<CUIInput> s_EventDispatcher;
-	IUIEventSystem* m_pUIFunctions;
+	enum EUIEvent
+	{
+		eUIE_OnVirtKeyboardDone,
+		eUIE_OnVirtKeyboardCancelled,
+	};
+
+	SUIEventReceiverDispatcher<CUIInput> m_eventDispatcher;
+	SUIEventSenderDispatcher<EUIEvent> m_eventSender;
 	IUIEventSystem* m_pUIEvents;
+	IUIEventSystem* m_pUIFunctions;
+
+	static TActionHandler<CUIInput>	s_actionHandler;
 	std::map< EUIEvent, uint > m_eventMap;
 };
 

@@ -17,13 +17,16 @@
 
 #include <ILevelSystem.h>
 
-SUIEventHelper<CUISettings> CUISettings::s_EventDispatcher;
-
 ////////////////////////////////////////////////////////////////////////////
 CUISettings::CUISettings()
 	: m_pUIEvents(NULL)
 	, m_pUIFunctions(NULL)
 	, m_currResId(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+void CUISettings::InitEventSystem()
 {
 	if (!gEnv->pFlashUI) return;
 
@@ -69,127 +72,125 @@ CUISettings::CUISettings()
 
 	// events to send from this class to UI flowgraphs
 	m_pUIFunctions = gEnv->pFlashUI->CreateEventSystem("Settings", IUIEventSystem::eEST_SYSTEM_TO_UI);
+	m_eventSender.Init(m_pUIFunctions);
 
 	{
-		SUIEventDesc eventDesc("OnGraphicChanged", "OnGraphicChanged", "Triggered on graphic settings change");
-		eventDesc.Params.push_back(SUIParameterDesc("Resolution", "Resolution", "Resolution ID", SUIParameterDesc::eUIPT_Int));
-		eventDesc.Params.push_back(SUIParameterDesc("ResX", "ResX", "Screen X resolution", SUIParameterDesc::eUIPT_Int));
-		eventDesc.Params.push_back(SUIParameterDesc("ResY", "ResY", "Screen Y resolution", SUIParameterDesc::eUIPT_Int));
-		eventDesc.Params.push_back(SUIParameterDesc("FullScreen", "FullScreen", "Fullscreen", SUIParameterDesc::eUIPT_Bool));
-		m_EventMap[eUIE_GraphicSettingsChanged] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnGraphicChanged", "Triggered on graphic settings change");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("Resolution", "Resolution ID");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ResX", "Screen X resolution");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ResY", "Screen Y resolution");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("FullScreen", "Fullscreen");
+		m_eventSender.RegisterEvent<eUIE_GraphicSettingsChanged>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnSoundChanged", "OnSoundChanged", "Triggered if sound volume changed");
-		eventDesc.Params.push_back(SUIParameterDesc("Music", "Music", "Music volume", SUIParameterDesc::eUIPT_Float));
-		eventDesc.Params.push_back(SUIParameterDesc("SFx", "SFx", "SFx volume", SUIParameterDesc::eUIPT_Float));
-		eventDesc.Params.push_back(SUIParameterDesc("Video", "Video", "Video volume", SUIParameterDesc::eUIPT_Float));
-		m_EventMap[eUIE_SoundSettingsChanged] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnSoundChanged", "Triggered if sound volume changed");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("Music", "Music volume");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("SFx", "SFx volume");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("Video", "Video volume");
+		m_eventSender.RegisterEvent<eUIE_SoundSettingsChanged>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnGameSettingsChanged", "OnGameSettingsChanged", "Triggered if game settings changed");
-		eventDesc.Params.push_back(SUIParameterDesc("MouseSensitivity", "MouseSensitivity", "Mouse Sensitivity", SUIParameterDesc::eUIPT_Float));
-		eventDesc.Params.push_back(SUIParameterDesc("InvertMouse", "InvertMouse", "Invert Mouse", SUIParameterDesc::eUIPT_Bool));
-		eventDesc.Params.push_back(SUIParameterDesc("InvertController", "InvertController", "Invert Controller", SUIParameterDesc::eUIPT_Bool));
-		m_EventMap[eUIE_GameSettingsChanged] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnGameSettingsChanged", "Triggered if game settings changed");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("MouseSensitivity", "Mouse Sensitivity");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("InvertMouse", "Invert Mouse");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("InvertController", "Invert Controller");
+		m_eventSender.RegisterEvent<eUIE_GameSettingsChanged>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnResolutions", "OnResolutions", "Triggered if resolutions were requested.");
-		eventDesc.IsDynamic = true;
-		eventDesc.sDynamicName = "Resolutions";
-		eventDesc.sDynamicDesc = "UI array with all resolutions (x1,y1,x2,y2,...)";
-		m_EventMap[eUIE_OnGetResolutions] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnResolutions", "Triggered if resolutions were requested.");
+		eventDesc.SetDynamic("Resolutions", "UI array with all resolutions (x1,y1,x2,y2,...)");
+		m_eventSender.RegisterEvent<eUIE_OnGetResolutions>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnResolutionItem", "OnResolutionItem", "Triggered once per each resolution if resolutions were requested.");
-		eventDesc.Params.push_back(SUIParameterDesc("ResString", "ResString", "Resolution as string (X x Y)", SUIParameterDesc::eUIPT_String));
-		eventDesc.Params.push_back(SUIParameterDesc("ID", "ID", "Resolution ID", SUIParameterDesc::eUIPT_Int));
-		m_EventMap[eUIE_OnGetResolutionItems] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnResolutionItem", "Triggered once per each resolution if resolutions were requested.");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_String>("ResString", "Resolution as string (X x Y)");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ID", "Resolution ID");
+		m_eventSender.RegisterEvent<eUIE_OnGetResolutionItems>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnLevelItem", "OnLevelItem", "Triggered once per level if levels were requested.");
-		eventDesc.Params.push_back(SUIParameterDesc("LevelLabel", "LevelLabel", "@ui_<level> for localization", SUIParameterDesc::eUIPT_String));
-		eventDesc.Params.push_back(SUIParameterDesc("LevelName", "LevelName", "name of the level", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_OnGetLevelItems] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnLevelItem", "Triggered once per level if levels were requested.");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_String>("LevelLabel", "@ui_<level> for localization");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_String>("LevelName", "name of the level");
+		m_eventSender.RegisterEvent<eUIE_OnGetLevelItems>(eventDesc);
 	}
 
 
 	// events that can be sent from UI flowgraphs to this class
 	m_pUIEvents = gEnv->pFlashUI->CreateEventSystem("Settings", IUIEventSystem::eEST_UI_TO_SYSTEM);
+	m_eventDispatcher.Init(m_pUIEvents, this, "UISettings");
 
 	{
-		SUIEventDesc eventDesc("SetGraphics", "SetGraphics", "Call this to set graphic modes");
-		eventDesc.Params.push_back(SUIParameterDesc("Resolution", "Resolution", "Resolution ID", SUIParameterDesc::eUIPT_Int));
-		eventDesc.Params.push_back(SUIParameterDesc("Fullscreen", "Fullscreen", "Fullscreen (True/False)", SUIParameterDesc::eUIPT_Bool));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnSetGraphicSettings);
+		SUIEventDesc eventDesc("SetGraphics", "Call this to set graphic modes");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("Resolution", "Resolution ID");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("Fullscreen", "Fullscreen (True/False)");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnSetGraphicSettings);
 	}
 
 	{
-		SUIEventDesc eventDesc("SetResolution", "SetResolution", "Call this to set resolution");
-		eventDesc.Params.push_back(SUIParameterDesc("ResX", "ResX", "Screen X resolution", SUIParameterDesc::eUIPT_Int));
-		eventDesc.Params.push_back(SUIParameterDesc("ResY", "ResY", "Screen Y resolution", SUIParameterDesc::eUIPT_Int));
-		eventDesc.Params.push_back(SUIParameterDesc("Fullscreen", "Fullscreen", "Fullscreen (True/False)", SUIParameterDesc::eUIPT_Bool));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnSetResolution);
+		SUIEventDesc eventDesc("SetResolution", "Call this to set resolution");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ResX", "Screen X resolution");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ResY", "Screen Y resolution");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("Fullscreen", "Fullscreen (True/False)");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnSetResolution);
 	}
 
 	{
-		SUIEventDesc eventDesc("SetSound", "SetSound", "Call this to set sound settings");
-		eventDesc.Params.push_back(SUIParameterDesc("Music", "Music", "Music volume", SUIParameterDesc::eUIPT_Float));
-		eventDesc.Params.push_back(SUIParameterDesc("SFx", "SFx", "SFx volume", SUIParameterDesc::eUIPT_Float));
-		eventDesc.Params.push_back(SUIParameterDesc("Video", "Video", "Video volume", SUIParameterDesc::eUIPT_Float));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnSetSoundSettings);
+		SUIEventDesc eventDesc("SetSound", "Call this to set sound settings");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("Music", "Music volume");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("SFx", "SFx volume");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("Video", "Video volume");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnSetSoundSettings);
 	}
 
 	{
-		SUIEventDesc eventDesc("SetGameSettings", "SetGameSettings", "Call this to set game settings");
-		eventDesc.Params.push_back(SUIParameterDesc("MouseSensitivity", "MouseSensitivity", "Mouse Sensitivity", SUIParameterDesc::eUIPT_Float));
-		eventDesc.Params.push_back(SUIParameterDesc("InvertMouse", "InvertMouse", "Invert Mouse", SUIParameterDesc::eUIPT_Bool));
-		eventDesc.Params.push_back(SUIParameterDesc("InvertController", "InvertController", "Invert Controller", SUIParameterDesc::eUIPT_Bool));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnSetGameSettings);
+		SUIEventDesc eventDesc("SetGameSettings", "Call this to set game settings");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Float>("MouseSensitivity", "Mouse Sensitivity");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("InvertMouse", "Invert Mouse");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("InvertController", "Invert Controller");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnSetGameSettings);
 	}
 
 	{
-		SUIEventDesc eventDesc("GetResolutionList", "GetResolutionList", "Execute this node will trigger the \"Events:Settings:OnResolutions\" node.");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnGetResolutions);
+		SUIEventDesc eventDesc("GetResolutionList", "Execute this node will trigger the \"Events:Settings:OnResolutions\" node.");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnGetResolutions);
 	}
 
 	{
-		SUIEventDesc eventDesc("GetCurrGraphics", "GetCurrGraphics", "Execute this node will trigger the \"Events:Settings:OnGraphicChanged\" node.");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnGetCurrGraphicsSettings);
+		SUIEventDesc eventDesc("GetCurrGraphics", "Execute this node will trigger the \"Events:Settings:OnGraphicChanged\" node.");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnGetCurrGraphicsSettings);
 	}
 
 	{
-		SUIEventDesc eventDesc("GetCurrSound", "GetCurrSound", "Execute this node will trigger the \"Events:Settings:OnSoundChanged\" node.");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnGetCurrSoundSettings);
+		SUIEventDesc eventDesc("GetCurrSound", "Execute this node will trigger the \"Events:Settings:OnSoundChanged\" node.");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnGetCurrSoundSettings);
 	}
 
 	{
-		SUIEventDesc eventDesc("GetCurrGameSettings", "GetCurrGameSettings", "Execute this node will trigger the \"Events:Settings:OnGameSettingsChanged\" node.");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnGetCurrGameSettings);
+		SUIEventDesc eventDesc("GetCurrGameSettings", "Execute this node will trigger the \"Events:Settings:OnGameSettingsChanged\" node.");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnGetCurrGameSettings);
 	}
 
 	{
-		SUIEventDesc eventDesc("GetLevels", "GetLevels", "Execute this node will trigger the \"Events:Settings:OnLevelItem\" node once per level.");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnGetLevels);
+		SUIEventDesc eventDesc("GetLevels", "Execute this node will trigger the \"Events:Settings:OnLevelItem\" node once per level.");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnGetLevels);
 	}
 
 	{
-		SUIEventDesc eventDesc("LogoutUser", "LogoutUser", "Execute this node to save settings and logout user");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUISettings::OnLogoutUser);
+		SUIEventDesc eventDesc("LogoutUser", "Execute this node to save settings and logout user");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUISettings::OnLogoutUser);
 	}
 
-	m_pUIEvents->RegisterListener(this, "CUISettings");
 	gEnv->pFlashUI->RegisterModule(this, "CUISettings");
 }
 
 ////////////////////////////////////////////////////////////////////////////
-CUISettings::~CUISettings()
+void CUISettings::UnloadEventSystem()
 {
-	if (m_pUIEvents) m_pUIEvents->UnregisterListener(this);
 	gEnv->pFlashUI->UnregisterModule(this);
 }
 
@@ -263,145 +264,92 @@ void CUISettings::Update(float fDeltaTime)
 ////////////////////////////////////////////////////////////////////////////
 // ui events
 ////////////////////////////////////////////////////////////////////////////
-void CUISettings::OnEvent( const SUIEvent& event )
-{
-	s_EventDispatcher.Dispatch( this, event );
-}
-
-////////////////////////////////////////////////////////////////////////////
-// Arg1: Resolution
-// Arg2: Fullscreen
-//
-void CUISettings::OnSetGraphicSettings( const SUIEvent& event )
+void CUISettings::OnSetGraphicSettings( int resIndex, bool fullscreen )
 {
 #if !defined(PS3) && !defined(XENON)
-	int resIndex;
-	bool fs;
-
-	if (event.args.GetArg(0, resIndex) && event.args.GetArg(1, fs) && resIndex >= 0 && resIndex < m_Resolutions.size())
+	if (resIndex >= 0 && resIndex < m_Resolutions.size())
 	{
 		m_currResId = resIndex;
 
 		m_pRXVar->Set(m_Resolutions[resIndex].first);
 		m_pRYVar->Set(m_Resolutions[resIndex].second);
-		m_pFSVar->Set(fs);
+		m_pFSVar->Set(fullscreen);
 
 		SendGraphicSettingsChange();
-		return;
 	}
-	assert(false);
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Arg1: ResX
-// Arg2: ResY
-// Arg3: Fullscreen
-//
-// DESC: this is depricated; shoud consider to use OnSetGraphicSettings
-void CUISettings::OnSetResolution( const SUIEvent& event )
+// DEPRECATED: shoud consider to use OnSetGraphicSettings
+void CUISettings::OnSetResolution( int resX, int resY, bool fullscreen )
 {
 #if !defined(PS3) && !defined(XENON)
-	int resX, resY;
-	bool fs;
-	if (event.args.GetArg(0, resX) && event.args.GetArg(1, resY) && event.args.GetArg(2, fs))
-	{
-		m_pRXVar->Set(resX);
-		m_pRYVar->Set(resY);
-		m_pFSVar->Set(fs);
-		return;
-	}
-	assert(false);
+	m_pRXVar->Set(resX);
+	m_pRYVar->Set(resY);
+	m_pFSVar->Set(fullscreen);
+	return;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Arg1: Music
-// Arg2: SFx
-// Arg3: Video
-//
-void CUISettings::OnSetSoundSettings( const SUIEvent& event )
+void CUISettings::OnSetSoundSettings( float music, float sfx, float video )
 {
-	float music, sfx, video;
-	if (event.args.GetArg(0, music) && event.args.GetArg(1, sfx) && event.args.GetArg(2, video))
-	{
-		m_pMusicVar->Set(music);
-		m_pSFxVar->Set(sfx);
+	m_pMusicVar->Set(music);
+	m_pSFxVar->Set(sfx);
+	if (m_pVideoVar != m_pMusicVar)
 		m_pVideoVar->Set(video);
-		SendSoundSettingsChange();
-		return;
-	}
-	assert(false);
+	SendSoundSettingsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Arg1: MouseSensitivity
-// Arg2: InvertMouse
-// Arg3: InvertController
-//
-void CUISettings::OnSetGameSettings( const SUIEvent& event )
+void CUISettings::OnSetGameSettings( float sensitivity, bool invertMouse, bool invertController )
 {
-	float sensitivity;
-	bool invertMouse, invertController;
-	if (event.args.GetArg(0, sensitivity) && event.args.GetArg(1, invertMouse) && event.args.GetArg(2, invertController))
-	{
-		m_pMouseSensitivity->Set(sensitivity);
-		m_pInvertMouse->Set(invertMouse);
-		m_pInvertController->Set(invertController);
-		SendGameSettingsChange();
-		return;
-	}
-	assert(false);
+	m_pMouseSensitivity->Set(sensitivity);
+	m_pInvertMouse->Set(invertMouse);
+	m_pInvertController->Set(invertController);
+	SendGameSettingsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUISettings::OnGetResolutions( const SUIEvent& event )
+void CUISettings::OnGetResolutions()
 {
 	SendResolutions();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUISettings::OnGetCurrGraphicsSettings( const SUIEvent& event )
+void CUISettings::OnGetCurrGraphicsSettings()
 {
 	SendGraphicSettingsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUISettings::OnGetCurrSoundSettings( const SUIEvent& event )
+void CUISettings::OnGetCurrSoundSettings()
 {
 	SendSoundSettingsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUISettings::OnGetCurrGameSettings( const SUIEvent& event )
+void CUISettings::OnGetCurrGameSettings()
 {
 	SendGameSettingsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUISettings::OnGetLevels( const SUIEvent& event )
+void CUISettings::OnGetLevels()
 {
 	if (gEnv->pGame && gEnv->pGame->GetIGameFramework() && gEnv->pGame->GetIGameFramework()->GetILevelSystem())
 	{
 		int i = 0;
 		while ( ILevelInfo* pLevelInfo = gEnv->pGame->GetIGameFramework()->GetILevelSystem()->GetLevelInfo( i++ ) )
 		{
-			SUIArguments args;
-			args.AddArgument( pLevelInfo->GetDisplayName() );
-			args.AddArgument( pLevelInfo->GetName() );
-			m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_OnGetLevelItems], args));
+ 			m_eventSender.SendEvent<eUIE_OnGetLevelItems>(pLevelInfo->GetDisplayName(), pLevelInfo->GetName());
 		}
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUISettings::OnLogoutUser( const SUIEvent& event )
+void CUISettings::OnLogoutUser()
 {
 	CUIManager* pManager = CUIManager::GetInstance();
 	if (pManager)
@@ -425,48 +373,30 @@ void CUISettings::SendResolutions()
 	{
 		string res;
 		res.Format("%i x %i", m_Resolutions[i].first, m_Resolutions[i].second);
-
-		SUIArguments args;
-		args.AddArgument(res);
-		args.AddArgument(i);
-
-		m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_OnGetResolutionItems], args));
+		m_eventSender.SendEvent<eUIE_OnGetResolutionItems>(res, (int)i);
 
 		resolutions.AddArgument(m_Resolutions[i].first);
 		resolutions.AddArgument(m_Resolutions[i].second);
 	}
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_OnGetResolutions], resolutions));
+ 	m_eventSender.SendEvent<eUIE_OnGetResolutions>(resolutions);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 void CUISettings::SendGraphicSettingsChange()
 {
-	SUIArguments args;
-	args.AddArgument(m_currResId);
-	args.AddArgument(m_Resolutions[m_currResId].first);
-	args.AddArgument(m_Resolutions[m_currResId].second);
-	args.AddArgument(m_pFSVar->GetIVal() != 0);
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_GraphicSettingsChanged], args));
+ 	m_eventSender.SendEvent<eUIE_GraphicSettingsChanged>(m_currResId, m_Resolutions[m_currResId].first, m_Resolutions[m_currResId].second, m_pFSVar->GetIVal() != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 void CUISettings::SendSoundSettingsChange()
 {
-	SUIArguments args;
-	args.AddArgument(m_pMusicVar->GetFVal());
-	args.AddArgument(m_pSFxVar->GetFVal());
-	args.AddArgument(m_pVideoVar->GetFVal());
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_SoundSettingsChanged], args));
+ 	m_eventSender.SendEvent<eUIE_SoundSettingsChanged>(m_pMusicVar->GetFVal(), m_pSFxVar->GetFVal(), m_pVideoVar->GetFVal());
 }
 
 ////////////////////////////////////////////////////////////////////////////
 void CUISettings::SendGameSettingsChange()
 {
-	SUIArguments args;
-	args.AddArgument(m_pMouseSensitivity->GetFVal());
-	args.AddArgument((m_pInvertMouse->GetIVal() == 1));
-	args.AddArgument((m_pInvertController->GetIVal() == 1));
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_GameSettingsChanged], args));
+ 	m_eventSender.SendEvent<eUIE_GameSettingsChanged>(m_pMouseSensitivity->GetFVal(), m_pInvertMouse->GetIVal() != 0, m_pInvertController->GetIVal() != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -514,7 +444,7 @@ void CUISettings::LoadProfile(IPlayerProfile* pProfile)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void CUISettings::SaveProfile(IPlayerProfile* pProfile)
+void CUISettings::SaveProfile(IPlayerProfile* pProfile) const
 {
 	if (!(m_pRXVar 
 		&& m_pRYVar 
@@ -538,3 +468,6 @@ void CUISettings::SaveProfile(IPlayerProfile* pProfile)
 	pProfile->SetAttribute( "controls_invertMouse", m_pInvertMouse->GetIVal());
 	pProfile->SetAttribute( "controls_invertController", m_pInvertController->GetIVal());
 }
+
+////////////////////////////////////////////////////////////////////////////
+REGISTER_UI_EVENTSYSTEM( CUISettings );

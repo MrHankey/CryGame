@@ -8,7 +8,7 @@ Description: Item System interfaces.
 
 -------------------------------------------------------------------------
 History:
-- 1:9:2004   19:52 : Created by Márcio Martins
+- 1:9:2004   19:52 : Created by Marcio Martins
 - 20:6:2005        : Changed IItem to be a game object extension by Craig Tiller
 
 *************************************************************************/
@@ -222,6 +222,8 @@ struct IInventory: public IGameObjectExtension
 	virtual int GetCountOfCategory(const char *categoryName) const = 0;
 	virtual int GetCountOfUniqueId(uint8 uniqueId) const = 0;
 
+	virtual int GetSlotCount(int slotId) const = 0;
+
 	virtual EntityId GetItem(int slotId) const = 0;
 	virtual EntityId GetItemByClass(IEntityClass *pClass, IItem *pIgnoreItem = NULL) const = 0;
 	virtual IItem* GetItemByName(const char* name) const = 0;
@@ -278,6 +280,7 @@ struct IInventory: public IGameObjectExtension
 	virtual void AddListener(struct IInventoryListener* pListener) = 0;
 	virtual void RemoveListener(struct IInventoryListener* pListener) = 0;
 
+	virtual void IgnoreNextClear() = 0;
 };
 
 

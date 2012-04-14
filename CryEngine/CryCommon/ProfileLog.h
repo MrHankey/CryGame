@@ -72,18 +72,32 @@ private:
 class CScopedTimeLogger
 {
 	const char* m_sz;
-	CTimeValue m_time;
+	int64 m_start;
+	double m_freq;
 
 public:
 	explicit CScopedTimeLogger(const char* sz) :
-		m_sz(sz),
-		m_time(gEnv->pTimer->GetAsyncTime())
+		m_sz(sz)
 	{
-		CryLogAlways(">>>>> Start: %s", m_sz);
+		LARGE_INTEGER li;
+		QueryPerformanceFrequency(&li);
+		m_freq = double(li.QuadPart) / 1000.;
+		QueryPerformanceCounter(&li);
+		m_start = li.QuadPart;
+
+		CryFixedStringT<256> logString;
+		logString.Format(">>>>> Start: %s", m_sz);
+		gEnv->pConsole->PrintLine(logString.c_str());
 	}
+
 	~CScopedTimeLogger()
 	{
-		CryLogAlways(">>>>> End: %s (%f ms)", m_sz, (gEnv->pTimer->GetAsyncTime() - m_time).GetMilliSeconds());
+		LARGE_INTEGER li;
+		QueryPerformanceCounter(&li);
+		
+		CryFixedStringT<256> logString;
+		logString.Format(">>>>> End: %s (%f ms)", m_sz, double(li.QuadPart - m_start) / m_freq);
+		gEnv->pConsole->PrintLine(logString.c_str());
 	}
 };
 

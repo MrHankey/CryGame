@@ -157,9 +157,6 @@ UNIQUE_IFACE struct IFrameProfileSystem
 	virtual void AddPeaksListener( IFrameProfilePeakCallback *pPeakCallback ) = 0;
 	virtual void RemovePeaksListener( IFrameProfilePeakCallback *pPeakCallback ) = 0;
 
-	//! helper 
-	virtual float TicksToSeconds (int64 nTime) = 0;
-
   //! access to call stack string
   virtual const char* GetFullName( CFrameProfiler *pProfiler ) = 0;
 	virtual const char* GetModuleName( CFrameProfiler *pProfiler ) = 0;
@@ -340,18 +337,12 @@ public:
 	int64 m_totalTime;
 	//! Self frame time spent only in this counter (But includes recursive calls to same counter) in current frame.
 	int64 m_selfTime;
-	//! Total time spent in this counter during all profiling period.
-	int64 m_sumTotalTime;
-	//! Total self time spent in this counter during all profiling period.
-	int64 m_sumSelfTime;
 	//! Latest frame ID
 	uint64 m_latestFrame;
 	//! Displayed quantity (interpolated or avarage).
 	float m_displayedValue;
 	//! How many times this profiler counter was executed.
 	int m_count;
-//	//! Displayed quantity (current frame value).
-//	float m_displayedCurrentValue;
 	//! How variant this value.
 	float m_variance;
 
@@ -389,7 +380,6 @@ public:
 		m_pOfflineHistory = 0;
 		m_subsystem = (uint8)subsystem;
 		m_totalTime = m_selfTime = 0;
-		m_sumTotalTime = m_sumSelfTime = 0;
 		m_count = 0;
 		m_pISystem = pSystem;
 		m_name = sCollectorName;
@@ -416,7 +406,6 @@ class CFrameProfilerSection
 public:
 	int64 m_startTime;
 	int64 m_excludeTime;
-	int64 m_yieldTime; 
 	CFrameProfiler *m_pFrameProfiler;
 	CFrameProfilerSection *m_pParent;
 

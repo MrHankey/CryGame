@@ -38,6 +38,7 @@ class CMaterial;
 struct SShaderSerializeContext;
 enum EVertexFormat;
 struct IRenderMesh;
+struct IAnimNode;
 
 //================================================================
 
@@ -599,12 +600,12 @@ struct SDetailDecalInfo
 #define FOB_NEAREST         (1<<23)			// 0x800000
 
 #define FOB_CHARACTER       (1<<24)			// 0x1000000
-#define FOB_SHADOW_DISSOLVE (1<<25)			// 0x2000000
+#define FOB_DISSOLVE_OUT (1<<25)		// 0x2000000
 
 #define FOB_NO_STATIC_DECALS	(1<<26)         // 0x4000000
 
 //#define FOB_CAMERA_SPACE    (1<<27)			// 0x8000000
-#define FOB_TESSELATION  (1<<27)			// 0x8000000
+#define FOB_ALLOW_TESSELLATION  (1<<27)			// 0x8000000
 #define FOB_DECAL_TEXGEN_2D (1<<28)			// 0x10000000
 
 
@@ -616,8 +617,8 @@ struct SDetailDecalInfo
 
 // Note:
 //	 WARNING: FOB_MASK_AFFECTS_MERGING must start from 0x10000 (important for instancing).
-#define FOB_MASK_AFFECTS_MERGING_GEOM  (FOB_VEGETATION | FOB_CHARACTER | FOB_BENDED | FOB_NO_STATIC_DECALS | FOB_BLEND_WITH_TERRAIN_COLOR | FOB_TESSELATION)
-#define FOB_MASK_AFFECTS_MERGING  (FOB_HAS_PREVSKINXFORM | FOB_HAS_PREVMATRIX | FOB_VEGETATION | FOB_CHARACTER | FOB_BENDED | FOB_INSHADOW/* | FOB_AMBIENT_OCCLUSION*/| FOB_AFTER_WATER | FOB_DISSOLVE | FOB_NEAREST | FOB_NO_STATIC_DECALS | FOB_TESSELATION)
+#define FOB_MASK_AFFECTS_MERGING_GEOM  (FOB_VEGETATION | FOB_CHARACTER | FOB_BENDED | FOB_NO_STATIC_DECALS | FOB_BLEND_WITH_TERRAIN_COLOR | FOB_ALLOW_TESSELLATION)
+#define FOB_MASK_AFFECTS_MERGING  (FOB_HAS_PREVSKINXFORM | FOB_HAS_PREVMATRIX | FOB_VEGETATION | FOB_CHARACTER | FOB_BENDED | FOB_INSHADOW/* | FOB_AMBIENT_OCCLUSION*/| FOB_AFTER_WATER | FOB_DISSOLVE | FOB_DISSOLVE_OUT  | FOB_NEAREST | FOB_NO_STATIC_DECALS | FOB_ALLOW_TESSELLATION)
 #define FOB_PERSISTENT  (FOB_PERMANENT | FOB_REMOVED)
 
 //////////////////////////////////////////////////////////////////////
@@ -894,6 +895,16 @@ public:
 		m_bHasShadowCasters = false;
 
 		m_pRenderNode = NULL;
+	}
+
+	void AssignId(int id)
+	{
+		m_Id = id;
+
+#ifndef _RELEASE
+		if (m_Id != id) // In case the value gets truncated
+			__debugbreak();
+#endif
 	}
 
   void CloneObject(CRenderObject *srcObj)
@@ -1405,7 +1416,7 @@ struct STexState
   _inline friend bool operator == (const STexState &m1, const STexState &m2)
   {
     if (*(uint64 *)&m1 == *(uint64 *)&m2 && m1.m_dwBorderColor == m2.m_dwBorderColor &&
-        m1.m_bComparison == m2.m_bComparison && m1.m_bSRGBLookup == m2.m_bSRGBLookup)
+        m1.m_bActive == m2.m_bActive && m1.m_bComparison == m2.m_bComparison && m1.m_bSRGBLookup == m2.m_bSRGBLookup)
       return true;
     return false;
   }
@@ -2064,14 +2075,15 @@ struct SInputShaderResources : public SBaseShaderResources
 #define SHGD_TEX_CUSTOM 0x1000
 #define SHGD_TEX_CUSTOM_SECONDARY 0x2000
 #define SHGD_TEX_DECAL 0x4000
-#define SHGD_HW_TESSELATION 0x20000
+#define SHGD_HW_ALLOW_POM 0x10000
+#define SHGD_HW_TESSELLATION 0x20000
 #define SHGD_USER_ENABLED 0x40000
 #define SHGD_HW_PS3  0x80000
 #define SHGD_HW_X360 0x100000
 #define SHGD_HW_DX10 0x200000
 #define SHGD_HW_DX11 0x400000
 #define SHGD_HW_DX9  0x800000
-#define SHGD_HW_WATER_TESSELATION 0x1000000
+#define SHGD_HW_WATER_TESSELLATION 0x1000000
 
 struct SShaderGenBit
 {
@@ -2218,7 +2230,6 @@ enum EShaderTechniqueID
 {
 	TTYPE_Z = 0,
 	TTYPE_CAUSTICS,
-	TTYPE_DETAIL,
 	TTYPE_SHADOWPASS,
 	TTYPE_SHADOWGEN,
 #if !defined(XENON) && !defined(PS3)
@@ -2228,7 +2239,6 @@ enum EShaderTechniqueID
 	TTYPE_MOTIONBLURPASS,
 	TTYPE_SCATTERPASS,
 	TTYPE_CUSTOMRENDERPASS,
-	TTYPE_RAINPASS,
 	TTYPE_FURPASS,
 	TTYPE_EFFECTLAYER,
 #if !defined(XENON) && !defined(PS3)
@@ -2375,7 +2385,8 @@ enum EShaderTechniqueID
 #define EF2_VERTEXCOLORS 0x10000000
 #define EF2_SKINPASS 0x20000000
 #define EF2_HW_DISPLACEMENT_MAPPING 0x40000000
-#define EF2_HW_TESSELATION 0x40000000
+#define EF2_HW_TESSELLATION 0x40000000
+#define EF2_ALPHABLENDSHADOWS 0x80000000
 
 UNIQUE_IFACE struct IShader
 {
@@ -2533,6 +2544,8 @@ struct SShaderItem
 #define DLAT_RECTANGLE		0x2
 #define DLAT_POINT				0x4
 
+#define DL_SHADOW_UPDATE_SHIFT 8
+
 struct IEntity;
 
 #include "IRenderMesh.h"
@@ -2549,6 +2562,7 @@ struct SRenderLight
     m_n3DEngineLightId = -1;
     m_ProjMatrix.SetIdentity();
     m_ObjMatrix.SetIdentity();
+    m_BaseObjMatrix.SetIdentity();
     m_sName = "";
     m_fCoronaIntensity = 1.0f;
     m_fCoronaDistSizeFactor = 1.0f;
@@ -2556,6 +2570,14 @@ struct SRenderLight
     m_nCoronaShaftsMinSpec = eSQ_VeryHigh;
     m_nLensGhostsMinSpec = eSQ_VeryHigh;
     m_pDeferredRenderMesh = NULL;
+		m_pLightAnimationNode = NULL;
+		m_lightAnimationName[0] = '\0';
+		m_bTimeScrubbingInTrackView = false;
+		m_fTimeScrubbed = 0.0f;
+    m_fShadowBias = 1.0f;
+    m_fShadowSlopeBias = 1.0f;
+		m_fShadowUpdateMinRadius = m_fRadius;
+		m_nShadowUpdateRatio = 1<<DL_SHADOW_UPDATE_SHIFT;
   }
 
   const Vec3 &GetPosition() const
@@ -2618,6 +2640,7 @@ struct SRenderLight
 
   Matrix44                        m_ProjMatrix;
   Matrix34                        m_ObjMatrix;
+  Matrix34                        m_BaseObjMatrix;
   Matrix34                        m_ClipBox;
 
   ColorF                          m_Color;	// w component unused..
@@ -2626,9 +2649,14 @@ struct SRenderLight
   Vec3                            m_Origin;	// World space position.
   Vec3                            m_BaseOrigin;	// World space position.
 
+  float                           m_fShadowBias;
+  float                           m_fShadowSlopeBias;
+
   float														m_fRadius;
   float														m_SpecMult;
   float														m_BaseSpecMult;
+
+  // deprecated
   float														m_fHDRDynamic;	// 0 to get the same results in HDR, <0 to get darker, >0 to get brighter.
 
   float														m_fAnimSpeed;  
@@ -2649,6 +2677,8 @@ struct SRenderLight
   float														m_fLightFrustumAngle;
   float														m_fProjectorNearPlane;
 
+	float														m_fShadowUpdateMinRadius;
+
   uint32                          m_Flags;		// light flags (DLF_etc).
   int32														m_Id; 
   int32														m_n3DEngineLightId;
@@ -2660,8 +2690,16 @@ struct SRenderLight
   int16														m_sWidth;
   int16														m_sHeight;
 
+	const IAnimNode *               m_pLightAnimationNode;
+	static const int                kMaxLightAnimationNameLength = 31;
+	char                            m_lightAnimationName[kMaxLightAnimationNameLength+1];
+	bool                            m_bTimeScrubbingInTrackView;
+	float                           m_fTimeScrubbed;
+
   // Animation rotation ratio
   int16                           m_AnimRotation[3];
+	
+	uint16													m_nShadowUpdateRatio;
 
   uint8														m_nLightStyle;
   uint8														m_nLightPhase;
@@ -2733,6 +2771,7 @@ public:
 		m_sDeferredGeom=dl.m_sDeferredGeom;
 		m_ProjMatrix=dl.m_ProjMatrix;
 		m_ObjMatrix=dl.m_ObjMatrix;
+		m_BaseObjMatrix=dl.m_BaseObjMatrix;
 		m_ClipBox=dl.m_ClipBox;
 		m_Color=dl.m_Color;
 		m_BaseColor=dl.m_BaseColor;
@@ -2741,6 +2780,8 @@ public:
 		m_fRadius=dl.m_fRadius;
 		m_SpecMult=dl.m_SpecMult;
 		m_BaseSpecMult=dl.m_BaseSpecMult;
+    m_fShadowBias=dl.m_fShadowBias;
+    m_fShadowSlopeBias=dl.m_fShadowSlopeBias;
 		m_fHDRDynamic=dl.m_fHDRDynamic;
 		m_fAnimSpeed=dl.m_fAnimSpeed;  
 		m_fCoronaScale=dl.m_fCoronaScale;
@@ -2769,6 +2810,12 @@ public:
 		m_nLightPhase=dl.m_nLightPhase;
 		m_nPostEffect=dl.m_nPostEffect;
 		m_ShadowChanMask=dl.m_ShadowChanMask;
+		m_pLightAnimationNode=dl.m_pLightAnimationNode;
+		strcpy_s(m_lightAnimationName, dl.m_lightAnimationName);
+		m_bTimeScrubbingInTrackView=dl.m_bTimeScrubbingInTrackView;
+		m_fTimeScrubbed=dl.m_fTimeScrubbed;
+		m_fShadowUpdateMinRadius =dl.m_fShadowUpdateMinRadius;
+		m_nShadowUpdateRatio =dl.m_nShadowUpdateRatio;
 
 		if (m_Shader.m_pShader)
 			m_Shader.m_pShader->AddRef();
@@ -2802,13 +2849,19 @@ public:
 		m_BaseSpecMult = fSpecMult;
 	}
 
+  void SetShadowBiasParams( float fShadowBias, float fShadowSlopeBias )
+  {
+    m_fShadowBias = fShadowBias;
+    m_fShadowSlopeBias = fShadowSlopeBias;
+  }
+
 	// Summary:
 	//	 Use this instead of m_Color.
 	const float &GetSpecularMult() const
 	{
 		return m_SpecMult;
 	}
-	void SetMatrix(const Matrix34& Matrix)
+  void SetMatrix(const Matrix34& Matrix, bool reset=true)
 	{
 		// Scale the cubemap to adjust the default 45 degree 1/2 angle fustrum to 
 		// the desired angle (0 to 90 degrees).
@@ -2819,6 +2872,10 @@ public:
 		transMat(3,0) = -Matrix(0,3); transMat(3,1) = -Matrix(1,3); transMat(3,2) = -Matrix(2,3);
 		m_ProjMatrix = transMat * m_ProjMatrix;
 		m_ObjMatrix = Matrix;
+		if (reset)
+		{
+			m_BaseObjMatrix = m_ObjMatrix;
+		}
 	}
 
 	void SetSpecularCubemap(ITexture* texture)

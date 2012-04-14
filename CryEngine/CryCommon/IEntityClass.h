@@ -23,6 +23,19 @@ struct IEntityProxy;
 struct SEntitySpawnParams;
 struct IEntityScript;
 
+struct SEditorClassInfo
+{
+	SEditorClassInfo():
+		sIcon(""),
+		sHelper(""),
+		sCategory("")
+	{
+	}
+
+	const char* sIcon;
+	const char* sHelper;
+	const char* sCategory;
+};
 
 enum EEntityClassFlags
 {
@@ -265,14 +278,9 @@ UNIQUE_IFACE struct IEntityClass
 	//    IScriptTable interface if this entity have script, or NULL if no script defined for this entity class.
 	virtual IScriptTable* GetScriptTable() const = 0;
 
-	// Description:
-	//    Returns the helper object name to be displayed in the editor for this class, if any.
-	virtual const char* GetEditorHelperObjectName() const = 0;
-
-	// Description:
-	//    Returns the icon name to be displayed in the editor for this class, if any.
-	virtual const char* GetEditorIconName() const = 0;
-
+	virtual const SEditorClassInfo& GetEditorClassInfo() const = 0;
+	virtual void SetEditorClassInfo(const SEditorClassInfo& editorClassInfo) = 0;
+	
 	// Description:
 	//    Loads the script.
 	//    It is safe to call LoadScript multiple times, only first time the script will be loaded, if bForceReload is not specified.
@@ -405,8 +413,7 @@ UNIQUE_IFACE struct IEntityClassRegistry
 			: flags(0)
 			, sName("")
 			, sScriptFile("")
-			, sEditorHelper("")
-			, sEditorIcon("")
+			, editorClassInfo()
 			, pUserProxyCreateFunc(NULL)
 			, pUserProxyData(NULL)
 			, pPropertyHandler(NULL)
@@ -419,8 +426,7 @@ UNIQUE_IFACE struct IEntityClassRegistry
 		const char*   sName;
 		const char*   sScriptFile;
 
-		const char*	  sEditorHelper;
-		const char*	  sEditorIcon;
+		SEditorClassInfo editorClassInfo;
 
 		IEntityClass::UserProxyCreateFunc pUserProxyCreateFunc;
 		void*         pUserProxyData;

@@ -32,8 +32,6 @@ typedef enum
 	eGE_Death,
 	eGE_Revive,
 
-	eGE_SuitModeChanged,
-
 	eGE_Hit,
 	eGE_Damage,
 

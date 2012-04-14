@@ -355,6 +355,9 @@ struct IAnimatedCharacter : public IGameObjectExtension
 
 	virtual bool IsAnimationControllingMovement() const = 0;
 	virtual bool IsAnimationControllingRotation() const = 0;
+
+	// Add movement to the animated character - used to force movement when the character is in animation controlled movement
+	virtual void ForceMovement(const Vec3 &vRelativeTranslation, const Quat &qAbsoluteRotation) = 0;
 };
 
 //--------------------------------------------------------------------------------

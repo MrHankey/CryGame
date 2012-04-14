@@ -8,7 +8,7 @@ Description: Item parameters structure.
 
 -------------------------------------------------------------------------
 History:
-- 7:10:2005   14:20 : Created by Márcio Martins
+- 7:10:2005   14:20 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __ITEMPARAMS_H__

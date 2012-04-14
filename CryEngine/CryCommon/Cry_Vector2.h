@@ -129,8 +129,8 @@ template<class F> struct Vec2_tpl
 	ILINE operator F*() { return &x; }
 	ILINE Vec2_tpl& flip() { x=-x;y=-y; return *this; }
 	ILINE Vec2_tpl& zero() { x=y=0; return *this; }
-	ILINE Vec2_tpl rot90ccw() { return Vec2_tpl(-y,x); }
-	ILINE Vec2_tpl rot90cw() { return Vec2_tpl(y,-x); }
+	ILINE Vec2_tpl rot90ccw() const { return Vec2_tpl(-y,x); }
+	ILINE Vec2_tpl rot90cw() const { return Vec2_tpl(y,-x); }
 
 	#ifdef quotient_h
 		quotient_tpl<F> fake_atan2() const {

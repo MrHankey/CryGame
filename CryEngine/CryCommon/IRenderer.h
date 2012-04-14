@@ -89,6 +89,7 @@ struct RenderLMData;
 struct SShaderParam;
 struct SSkyLightRenderParams;
 struct SParticleRenderInfo;
+struct SParticleAddJobCompare;
 struct IFlashPlayer_RenderProxy;
 struct IVideoPlayer;
 struct IColorGradingController;
@@ -755,7 +756,7 @@ enum PublicRenderPrimitiveType
 // SetRenderTarget flags
 #define SRF_SCREENTARGET  1
 #define SRF_USE_ORIG_DEPTHBUF 2
-#define SRF_USE_ORIG_DEPTHBUF_FSAA 4
+#define SRF_USE_ORIG_DEPTHBUF_MSAA 4
 
 //====================================================================
 // Draw shaders flags (EF_EndEf3d)
@@ -771,6 +772,11 @@ enum PublicRenderPrimitiveType
 #define SHDF_NO_DRAWNEAR            (1<<11)
 #define SHDF_STREAM_SYNC            (1<<13)
 #define SHDF_NO_DRAWCAUSTICS        (1<<14)
+
+//////////////////////////////////////////////////////////////////////
+// Virtual screen size
+const float VIRTUAL_SCREEN_WIDTH = 800.0f;
+const float VIRTUAL_SCREEN_HEIGHT = 600.0f;
 
 //////////////////////////////////////////////////////////////////////
 // Object states
@@ -1062,6 +1068,7 @@ enum EDrawTextFlags
   eDrawText_Center        = BIT(1),		// centered alignment, otherwise right or left
   eDrawText_Right         = BIT(2),		// right alignment, otherwise center or left
 	eDrawText_CenterV       = BIT(8),		// center vertically, oterhwise top
+	eDrawText_Bottom				= BIT(9),		// bottom alignment
 
 	eDrawText_2D            = BIT(4),		// 3 component vector is used for xy screen position, otherwise it's 3d world space position
 
@@ -1113,7 +1120,7 @@ struct SDrawTextInfo
 	#define MAX_GPU_NUM 4
 
 
-#define MAX_FRAME_ID_STEP_PER_FRAME 8
+#define MAX_FRAME_ID_STEP_PER_FRAME 20
 const int MAX_GSM_LODS_NUM = 8;
 
 const f32 DRAW_NEAREST_MIN = 0.03f;
@@ -1401,7 +1408,7 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual bool IsDebugRenderNode(IRenderNode* pRenderNode) const = 0;
 
 	virtual bool DeleteContext(WIN_HWND hWnd)=0;
-	virtual bool CreateContext(WIN_HWND hWnd, bool bAllowFSAA=false)=0;
+	virtual bool CreateContext(WIN_HWND hWnd, bool bAllowMSAA=false)=0;
 	virtual bool SetCurrentContext(WIN_HWND hWnd)=0;
 	virtual void MakeMainContextActive()=0;
 	virtual WIN_HWND GetCurrentContextHWND()=0;
@@ -1523,6 +1530,10 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual void  SetWhiteTexture()=0;
 
 	// Summary:
+	//	Gets the white texture Id.
+	virtual int  GetWhiteTextureId() const =0;
+
+	// Summary:
 	//	Draws a 2d image on the screen. 
 	// Example:
 	//	Hud etc.
@@ -1536,6 +1547,7 @@ struct IRenderer//: public IRendererCallbackServer
 	//		stereoDepth - Places image in stereo 3d space. The depth is specified in camera space, the stereo params are the same that
 	//									are used for the scene. A value of 0 is handled as a special case and always places the image on the screen plane.
 	virtual void  Push2dImage(float xpos,float ypos,float w,float h,int texture_id,float s0=0,float t0=0,float s1=1,float t1=1,float angle=0,float r=1,float g=1,float b=1,float a=1,float z=1,float stereoDepth=0)=0;
+
 	// Summary:
 	//	Draws all images to the screen that were collected with Push2dImage.
 	virtual void  Draw2dImageList()=0;
@@ -1543,7 +1555,6 @@ struct IRenderer//: public IRendererCallbackServer
 	// Summary:
 	//	Draws a image using the current matrix.
 	virtual void DrawImage(float xpos,float ypos,float w,float h,int texture_id,float s0,float t0,float s1,float t1,float r,float g,float b,float a,bool filtered=true)=0;
-
 
 	// Description:
 	//	Draws a image using the current matrix, more flexible than DrawImage
@@ -2120,7 +2131,6 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual bool SF_MapTexture(int texID, int level, void*& pBits, uint32& pitch) = 0;
 	virtual bool SF_UnmapTexture(int texID, int level) = 0;
 	virtual void SF_GetMeshMaxSize(int& numVertices, int& numIndices) const = 0;
-	virtual void SF_GetThreadIDs(uint32& mainThreadID, uint32& renderThreadID) const = 0;
 	enum ESFMaskOp
 	{
 		BeginSubmitMask_Clear,
@@ -2136,6 +2146,8 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual void SF_Flush() = 0;
 	virtual int SF_CreateTexture(int width, int height, int numMips, unsigned char* pData, ETEX_Format eTF, int flags) = 0;
 #endif // #ifndef EXCLUDE_SCALEFORM_SDK
+	virtual void SF_GetThreadIDs(uint32& mainThreadID, uint32& renderThreadID) const = 0;
+
 	//GPU Timers
 	virtual void	RT_BeginGPUTimer(const char* name, gpu_profile_flags_t flags=0) = 0;
 	virtual void	RT_EndGPUTimer(const char* name) = 0;
@@ -2158,7 +2170,6 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual void StopLoadtimeFlashPlayback() = 0;
 
 	virtual void SetCloudShadowTextureId( int id, const Vec3 & vSpeed  ) = 0;
-	virtual void SetSkyLightRenderParams( const SSkyLightRenderParams* pSkyLightRenderParams ) = 0;
 	virtual uint16 PushFogVolumeContribution( const ColorF& fogVolumeContrib ) = 0;
 
 	virtual int GetMaxTextureSize()=0;
@@ -2264,10 +2275,13 @@ struct IRenderer//: public IRendererCallbackServer
 		va_end(args);
 	}
 
-
 	// Summary:
 	//	Determine if a switch to stereo mode will occur at the start of the next frame
 	virtual bool IsStereoModeChangePending() = 0;
+
+	// Summary:
+	//	Set whether or not the screen should be copied into the back buffer each frame
+	virtual void SetShouldCopyScreenToBackBuffer(bool bEnable) = 0;
 
 	// Summary:
 	// Clear the queue for ComputeVertices when using the job system for particles
@@ -2347,6 +2361,7 @@ enum ERenderQueryTypes
 	EFQ_RecurseLevel,
 	EFQ_Pointer2FrameID,
 	EFQ_DeviceLost,
+	EFQ_D3DDevice,
 	EFQ_LightSource,
 
 	EFQ_Alloc_APITextures,
@@ -2358,6 +2373,8 @@ enum ERenderQueryTypes
 
 	EFQ_HDRModeEnabled,
 	EFQ_DeferredShading,
+	EFQ_GetShadowPoolFrustumsNum,
+	EFQ_GetShadowPoolAllocThisFrameNum,
 
 	// Description:
 	//		Query will return all textures in the renderer,
@@ -2376,7 +2393,7 @@ enum ERenderQueryTypes
 	EFQ_MultiGPUEnabled,
 	EFQ_DrawNearFov,
 	EFQ_TextureStreamingEnabled,
-	EFQ_FSAAEnabled,
+	EFQ_MSAAEnabled,
 
 	// Summary:
 	//		Pointer to struct with PS3 lowlevel render-api usage stats.

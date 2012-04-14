@@ -17,6 +17,7 @@ CGameActions::CGameActions()
 , m_pFilterNoObjectivesOpen(0)
 , m_pFilterVehicleNoSeatChangeAndExit(0)
 , m_pFilterNoConnectivity(0)
+, m_pFilterUIOnly(0)
 {
 #include "GameActions.actions"
 }

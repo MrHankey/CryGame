@@ -14,25 +14,23 @@
 #ifndef __UIEntityDynTexTag_H__
 #define __UIEntityDynTexTag_H__
 
+#include "IUIGameEventSystem.h"
 #include <IFlashUI.h>
-#include <IViewSystem.h>
 #include <IEntitySystem.h>
 
 class CUIEntityDynTexTag 
-	: public IUIEventListener
+	: public IUIGameEventSystem
 	, public IUIModule
 	, public IUIElementEventListener
 	, public IEntityEventListener
 {
 public:
-	CUIEntityDynTexTag();
-	~CUIEntityDynTexTag();
+	// IUIGameEventSystem
+	UIEVENTSYSTEM( "UIEntityDynTexTag" );
+	virtual void InitEventSystem();
+	virtual void UnloadEventSystem();
 
 	void UpdateView(const SViewParams &viewParams);
-
-	// IUIEventListener
-	virtual void OnEvent( const SUIEvent& event );
-	// ~IUIEventListener
 
 	// IUIModule
 	virtual void Reset();
@@ -47,25 +45,18 @@ public:
 	virtual void OnEntityEvent( IEntity *pEntity,SEntityEvent &event );
 	// ~IEntityEventListener
 
-
 private:
-	void OnAddTaggedEntity( const SUIEvent& event );
-	void OnUpdateTaggedEntity( const SUIEvent& event );
-	void OnRemoveTaggedEntity( const SUIEvent& event );
-	void OnRemoveAllTaggedEntity( const SUIEvent& event );
+	void OnAddTaggedEntity( EntityId entityId, const char* uiElementName, const char* entityClass, const char* materialTemplate, const Vec3& offset, const char* idx);
+	void OnUpdateTaggedEntity( EntityId entityId, const string& idx, const Vec3& offset, float speed );
+	void OnRemoveTaggedEntity( EntityId entityId, const string& idx );
+	void OnRemoveAllTaggedEntity( EntityId entityId );
 
-	void AddNewTag( EntityId entityId, const string& idx, const string& entityClass, const string& uiElementName, const string& materialTemplate, const Vec3& offset );
-	void RemoveEntityTag( EntityId entityId, const string& idx );
 	void RemoveAllEntityTags( EntityId entityId, bool bUnregisterListener = true );
-	void UpdateEntityTagOffset( EntityId entityId, const string& idx, Vec3 offset, float speed );
-
 	void ClearAllTags();
-
 	inline bool HasEntityTag( EntityId entityId ) const;
 
 private:
-	static SUIEventHelper<CUIEntityDynTexTag> s_EventDispatcher;
-
+	SUIEventReceiverDispatcher<CUIEntityDynTexTag> s_EventDispatcher;
 	IUIEventSystem* m_pUIOFct;
 
 	struct STagInfo

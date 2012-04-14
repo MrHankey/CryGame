@@ -8,7 +8,7 @@ Description:
 
 -------------------------------------------------------------------------
 History:
-- 5:9:2008   13:01 : Created by Márcio Martins
+- 5:9:2008   13:01 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __CLIENTGAMETOKENSYNCH_H__

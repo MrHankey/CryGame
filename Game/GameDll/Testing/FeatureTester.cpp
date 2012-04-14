@@ -1858,7 +1858,6 @@ void CFeatureTester::Update(float dt)
 
 	if (nonScaledDT > kMaximumFrameTime)
 	{
-		FeatureTesterLog ("Whoa - last frame took %g seconds! Clamping to %g for sanity's sake...", nonScaledDT, kMaximumFrameTime);
 		nonScaledDT = kMaximumFrameTime;
 	}
 

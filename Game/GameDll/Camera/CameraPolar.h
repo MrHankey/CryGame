@@ -8,7 +8,7 @@ Description: Camera polar coordinates, the basis of the camera coordinate system
 
 -------------------------------------------------------------------------
 History:
-- 01:2009 : Created By Jan Müller
+- 01:2009 : Created By Jan Mueller
 
 *************************************************************************/
 
@@ -23,8 +23,8 @@ const static float g_fCameraPolarMinPitch = g_fCamError;
 
 // Polar coordinates
 // imaging a 3D point being represented by two angles :
-// yaw/theta is the rotation around the height axis in 360°/2PI
-// pitch/phi is the rotation around the "forward" axis in 180°/PI
+// yaw/theta is the rotation around the height axis in 360 degrees/2PI
+// pitch/phi is the rotation around the "forward" axis in 180 degrees/PI
 // a CameraPolar represents any single 3d point on a unified sphere around (0,0,0)
 class CCameraPolar 
 {

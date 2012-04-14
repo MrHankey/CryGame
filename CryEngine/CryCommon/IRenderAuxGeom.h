@@ -135,6 +135,7 @@ struct IRenderAuxGeom
 	//	 Draws a Axis-aligned Bounding Boxes (AABB).
 	//##@{
 	virtual void DrawAABB( const AABB& aabb, bool bSolid, const ColorB& col, const EBoundingBoxDrawStyle& bbDrawStyle ) = 0;
+	virtual void DrawAABBs( const AABB* aabbs, uint32 aabbCount, bool bSolid, const ColorB& col, const EBoundingBoxDrawStyle& bbDrawStyle ) = 0;
 	virtual void DrawAABB( const AABB& aabb, const Matrix34& matWorld, bool bSolid, const ColorB& col, const EBoundingBoxDrawStyle& bbDrawStyle ) = 0;
 	//##@}
 

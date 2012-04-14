@@ -34,7 +34,7 @@
 template<class T>
 inline bool HasString(const T& val, FToString flags, const void* def_data = 0)
 {
-	if (flags.SkipDefault)
+	if (flags._SkipDefault)
 	{
 		if (val == (def_data ? *(const T*)def_data : T()))
 			return false;
@@ -158,7 +158,7 @@ struct TTypeInfo: CTypeInfo
 	{
 		if (!*str)
 		{
-			if (!flags.SkipEmpty)
+			if (!flags._SkipEmpty)
 				*(T*)data = T();
 			return true;
 		}
@@ -223,7 +223,7 @@ struct TProxyTypeInfo: CTypeInfo
 		T val;
 		if (!*str)
 		{
-			if (!flags.SkipEmpty)
+			if (!flags._SkipEmpty)
 				*(S*)data = S();
 			return true;
 		}
@@ -252,7 +252,7 @@ template<>
 inline string TTypeInfo<string>::ToString(const void* data, FToString flags, const void* def_data) const
 {
 	const string& val = *(const string*)data;
-	if (def_data && flags.SkipDefault)
+	if (def_data && flags._SkipDefault)
 	{
 		if (val == *(const string*)def_data)
 			return string();
@@ -263,7 +263,7 @@ inline string TTypeInfo<string>::ToString(const void* data, FToString flags, con
 template<> 
 inline bool TTypeInfo<string>::FromString(void* data, cstr str, FFromString flags) const
 {
-	if (!*str && flags.SkipEmpty)
+	if (!*str && flags._SkipEmpty)
 		return true;
 	*(string*)data = str;
 	return true;
@@ -892,7 +892,7 @@ private:
 			this_t& ptr = *(this_t*)data;
 			if (!*str)
 			{
-				if (!flags.SkipEmpty)
+				if (!flags._SkipEmpty)
 					ptr = 0;
 				return true;
 			}

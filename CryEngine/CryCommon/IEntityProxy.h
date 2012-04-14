@@ -556,6 +556,10 @@ UNIQUE_IFACE struct IEntityRenderProxy : public IEntityProxy
 	// Description:
 	//    sets hud render proxy to ignore hud interference filter
 	virtual void SetIgnoreHudInterferenceFilter(const bool bIgnoreFiler) = 0;
+
+	// Description:
+	//    sets whether 3D HUD Objects require to be rendered at correct depth (i.e. behind weapon)
+	virtual void SetHUDRequireDepthTest(const bool bRequire) = 0;
 	
 	// Description:
 	//    set render proxy to ignore heat value of object

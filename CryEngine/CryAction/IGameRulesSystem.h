@@ -768,11 +768,9 @@ struct IGameRules : public IGameObjectExtension
 	// Store the details of a migrating player
 	virtual void StoreMigratingPlayer(IActor* pActor) = 0;
 
-#ifdef GAME_IS_CRYSIS2
 	// Summary
 	// Determines if a projectile spawned by the client is hitting a friendly AI
 	virtual bool IsClientFriendlyProjectile(const EntityId projectileId, const EntityId targetEntityId) = 0;
-#endif
 };
 
 // Summary:

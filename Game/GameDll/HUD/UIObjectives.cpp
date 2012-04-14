@@ -14,66 +14,71 @@
 #include "StdAfx.h"
 #include "UIObjectives.h"
 #include "GameRules.h"
+#include "Actor.h"
 
-SUIEventHelper<CUIObjectives> CUIObjectives::s_EventDispatcher;
-
-//--------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////
 CUIObjectives::CUIObjectives()
+	: m_pUIEvents(NULL)
+	, m_pUIFunctions(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+void CUIObjectives::InitEventSystem()
 {
 	if ( gEnv->pFlashUI )
 	{
 		// events that be fired to the UI
-		m_pUIOEvt = gEnv->pFlashUI->CreateEventSystem( "UIObjectives", IUIEventSystem::eEST_SYSTEM_TO_UI );
+		m_pUIEvents = gEnv->pFlashUI->CreateEventSystem( "UIObjectives", IUIEventSystem::eEST_SYSTEM_TO_UI );
+		m_eventSender.Init(m_pUIEvents);
 
 		{
-			SUIEventDesc evtDesc( "ObjectiveAdded", "ObjectiveAdded", "Mission objective added" );
-			evtDesc.Params.push_back( SUIParameterDesc( "ObjectiveID", "MissionID", "ID of the mission" ) );
-			evtDesc.Params.push_back( SUIParameterDesc( "Name", "Name", "Name of the mission" ) );
-			evtDesc.Params.push_back( SUIParameterDesc( "Desc", "Desc", "Description of the mission" ) );
-			evtDesc.Params.push_back( SUIParameterDesc( "State", "State", "State of the objective" ) );
-			m_EventMap[ eUIOE_ObjectiveAdded ] = m_pUIOEvt->RegisterEvent( evtDesc );
+			SUIEventDesc evtDesc("ObjectiveAdded", "Mission objective added");
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("MissionID", "ID of the mission" );
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Name of the mission");
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Desc", "Description of the mission");
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("State", "State of the objective");
+			m_eventSender.RegisterEvent<eUIOE_ObjectiveAdded>(evtDesc);
 		}
 
 		{
-			SUIEventDesc evtDesc( "ObjectiveRemoved", "ObjectiveRemoved", "Mission objective removed" );
-			evtDesc.Params.push_back( SUIParameterDesc( "ObjectiveID", "MissionID", "ID of the mission" ) );
-			m_EventMap[ eUIOE_ObjectiveRemoved ] = m_pUIOEvt->RegisterEvent( evtDesc );
+			SUIEventDesc evtDesc( "ObjectiveRemoved", "Mission objective removed" );
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("MissionID", "ID of the mission" );
+			m_eventSender.RegisterEvent<eUIOE_ObjectiveRemoved>(evtDesc);
 		}
 
 		{
-			SUIEventDesc evtDesc( "ObjectivesReset", "ObjectivesReset", "All mission objectives reset" );
-			m_EventMap[ eUIOE_ObjectivesReset ] = m_pUIOEvt->RegisterEvent( evtDesc );
+			SUIEventDesc evtDesc( "ObjectivesReset", "All mission objectives reset" );
+			m_eventSender.RegisterEvent<eUIOE_ObjectivesReset>(evtDesc);
 		}
 
 		{
-			SUIEventDesc evtDesc( "ObjectiveStateChanged", "ObjectiveStateChanged", "Objective status changed" );
-			evtDesc.Params.push_back( SUIParameterDesc( "ObjectiveID", "MissionID", "ID of the mission" ) );
-			evtDesc.Params.push_back( SUIParameterDesc( "State", "State", "State of the objective" ) );
-			m_EventMap[ eUIOE_ObjectiveStateChanged ] = m_pUIOEvt->RegisterEvent( evtDesc );
+			SUIEventDesc evtDesc( "ObjectiveStateChanged", "Objective status changed" );
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("MissionID", "ID of the mission" );
+			evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("State", "State of the objective");
+			m_eventSender.RegisterEvent<eUIOE_ObjectiveStateChanged>(evtDesc);
 		}
 
 		// event system to receive events from UI
-		m_pUIOFct = gEnv->pFlashUI->CreateEventSystem( "UIObjectives", IUIEventSystem::eEST_UI_TO_SYSTEM );
-		m_pUIOFct->RegisterListener( this, "CUIObjectives" );
+		m_pUIFunctions = gEnv->pFlashUI->CreateEventSystem( "UIObjectives", IUIEventSystem::eEST_UI_TO_SYSTEM );
+		m_eventDispatcher.Init(m_pUIFunctions, this, "CUIObjectives");
 
 		{
-			SUIEventDesc evtDesc( "RequestObjectives", "RequestObjectives", "Request all mission objectives (force to call ObjectiveAdded for each objective)" );
-			s_EventDispatcher.RegisterEvent( m_pUIOFct, evtDesc, &CUIObjectives::OnRequestMissionObjectives );
+			SUIEventDesc evtDesc( "RequestObjectives", "Request all mission objectives (force to call ObjectiveAdded for each objective)" );
+			m_eventDispatcher.RegisterEvent( evtDesc, &CUIObjectives::OnRequestMissionObjectives );
 		}
 	}
 	UpdateObjectiveInfo();
 }
 
-CUIObjectives::~CUIObjectives()
+////////////////////////////////////////////////////////////////////////////
+void CUIObjectives::UnloadEventSystem()
 {
-	if ( m_pUIOFct )
-		m_pUIOFct->UnregisterListener( this );
 }
 
-//--------------------------------------------------------------------------------------------
-//---------------------- functions that generate events for the UI ---------------------------
-//--------------------------------------------------------------------------------------------
-
+////////////////////////////////////////////////////////////////////////////
+// functions that generate events for the UI 
+////////////////////////////////////////////////////////////////////////////
 void CUIObjectives::MissionObjectiveAdded( const string& objectiveID, int state )
 {
 	if ( gEnv->IsEditor() )
@@ -83,12 +88,7 @@ void CUIObjectives::MissionObjectiveAdded( const string& objectiveID, int state 
 	SMissionObjectiveInfo* pInfo = GetMissionObjectiveInfo( objectiveID );
 	if ( pInfo )
 	{
-		SUIArguments args;
-		args.AddArgument( objectiveID );
-		args.AddArgument( pInfo->Name );
-		args.AddArgument( pInfo->Desc );
-		args.AddArgument( state );
-		NotifyUI( eUIOE_ObjectiveAdded, args );
+		m_eventSender.SendEvent<eUIOE_ObjectiveAdded>(objectiveID, pInfo->Name, pInfo->Desc, state);
 	}
 }
 
@@ -98,16 +98,14 @@ void CUIObjectives::MissionObjectiveRemoved( const string& objectiveID )
 	SMissionObjectiveInfo* pInfo = GetMissionObjectiveInfo( objectiveID );
 	if ( pInfo )
 	{
-		SUIArguments args;
-		args.AddArgument( objectiveID );
-		NotifyUI( eUIOE_ObjectiveRemoved, args );
+		m_eventSender.SendEvent<eUIOE_ObjectiveRemoved>(objectiveID);
 	}
 }
 
 //--------------------------------------------------------------------------------------------
 void CUIObjectives::MissionObjectivesReset()
 {
-	NotifyUI( eUIOE_ObjectivesReset );
+	m_eventSender.SendEvent<eUIOE_ObjectivesReset>();
 }
 
 //--------------------------------------------------------------------------------------------
@@ -116,27 +114,19 @@ void CUIObjectives::MissionObjectiveStateChanged( const string& objectiveID, int
 	SMissionObjectiveInfo* pInfo = GetMissionObjectiveInfo( objectiveID );
 	if ( pInfo )
 	{
-		SUIArguments args;
-		args.AddArgument( objectiveID );
-		args.AddArgument( state );
-		NotifyUI( eUIOE_ObjectiveStateChanged, args );
+		m_eventSender.SendEvent<eUIOE_ObjectiveStateChanged>(objectiveID, state);
 	}
 }
 
-//--------------------------------------------------------------------------------------------
-//----------------------------- events that are fired by the UI ------------------------------
-//--------------------------------------------------------------------------------------------
-void CUIObjectives::OnEvent( const SUIEvent& event )
-{
-	s_EventDispatcher.Dispatch( this, event );
-}
-
-void CUIObjectives::OnRequestMissionObjectives( const SUIEvent& event )
+////////////////////////////////////////////////////////////////////////////
+// events that are fired by the UI
+////////////////////////////////////////////////////////////////////////////
+void CUIObjectives::OnRequestMissionObjectives()
 {
 	CGameRules* pGameRules = GetGameRules();
 	if ( pGameRules && g_pGame->GetIGameFramework()->GetClientActor() )
 	{
-		CActor* pActor = pGameRules->GetActorByChannelId( g_pGame->GetIGameFramework()->GetClientActor()->GetChannelId() );
+		CActor* pActor = (CActor*)pGameRules->GetActorByChannelId( g_pGame->GetIGameFramework()->GetClientActor()->GetChannelId() );
 		if ( pActor )
 		{
 			std::map< string, int > tmpList;
@@ -154,17 +144,9 @@ void CUIObjectives::OnRequestMissionObjectives( const SUIEvent& event )
 
 }
 
-//--------------------------------------------------------------------------------------------
-//------------------------------------- private functions ------------------------------------
-//--------------------------------------------------------------------------------------------
-
-void CUIObjectives::NotifyUI( EUIObjectiveEvent eventType, const SUIArguments& args )
-{
-	if( m_pUIOEvt )
-		m_pUIOEvt->SendEvent( SUIEvent(m_EventMap[eventType], args) );
-}
-
-//--------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////
+// private functions
+////////////////////////////////////////////////////////////////////////////
 void CUIObjectives::UpdateObjectiveInfo()
 {
 	m_ObjectiveMap.clear();
@@ -203,7 +185,7 @@ void CUIObjectives::UpdateObjectiveInfo()
 	}
 }
 
-//--------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////
 CUIObjectives::SMissionObjectiveInfo* CUIObjectives::GetMissionObjectiveInfo( const string& objectiveID, bool bLogError )
 {
 	TObjectiveMap::iterator it = m_ObjectiveMap.find( objectiveID );
@@ -216,8 +198,11 @@ CUIObjectives::SMissionObjectiveInfo* CUIObjectives::GetMissionObjectiveInfo( co
 	return NULL;
 }
 
-//--------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////
 CGameRules* CUIObjectives::GetGameRules()
 {
 	return static_cast<CGameRules *>( g_pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules() );
 }
+
+////////////////////////////////////////////////////////////////////////////
+REGISTER_UI_EVENTSYSTEM( CUIObjectives );

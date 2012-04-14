@@ -475,18 +475,16 @@ unsigned int CryGetCurrentThreadId()
 
 #endif
 
-#if defined(WIN32) || defined(WIN64) || defined(XENON)
+#if defined(WIN32) || defined(WIN64)
 #if !defined(_LIB) || defined(_LAUNCHER)
-int64 CryQueryPerformanceCounter()
+
+int64 CryGetTicks()
 {
-#if !defined (USE_MULTICORE_SAVE_TIMING) && !defined(XENON)
-	return __rdtsc();
-#else
 	LARGE_INTEGER li;
 	QueryPerformanceCounter( &li );
 	return li.QuadPart;	
-#endif
 }
+
 #endif
 #endif
 

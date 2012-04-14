@@ -722,7 +722,7 @@ public:
 
 private:
 
-	// Márcio: Changed this from an enum since some compilers don't support 64bit enums
+	// Marcio: Changed this from an enum since some compilers don't support 64bit enums
 	// and we had ran out of bits!
 	typedef uint64 MovementRequestFlags;
 	
@@ -945,6 +945,10 @@ struct IMovementController
 	virtual bool GetStanceState( const SStanceStateQuery& query, SStanceState& state ) = 0;
 
 	virtual inline Vec2 GetDesiredMoveDir() const { return Vec2(0,1); }
+
+	// Orientation deviation is only taken into account when it's over the angleThreshold (degrees) & it has
+	// been like that for timeThreshold seconds.
+	virtual void SetDeviatedOrientationThresholds(CTimeValue timeThreshold, float angleThreshold) {};
 };
 
 #endif

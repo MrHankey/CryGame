@@ -8,7 +8,7 @@ Description:	Pathfinder Interface.
 
 -------------------------------------------------------------------------
 History:
-- 15:1:2009   18:01 : Created by Márcio Martins
+- 15:1:2009   18:01 : Created by Marcio Martins
 
 *************************************************************************/
 
@@ -25,6 +25,7 @@ struct IAIPathFinderListerner;
 struct IAIPathAgent;
 
 #include "IMemory.h"
+#include <INavigationSystem.h>
 
 /* WARNING: These interfaces and structures are soon to be deprecated.
 						Use at your own risk of having to change your code later!
@@ -109,6 +110,19 @@ struct PathPointDescriptor
 	};
 	typedef _smart_ptr< SmartObjectNavData > SmartObjectNavDataPtr;
 
+	struct SmartObjectMNMData
+	{
+		SmartObjectMNMData()
+			: meshID(0)
+			, offMeshLinkID(0)
+		{
+
+		}
+
+		uint32	meshID;
+		uint32	offMeshLinkID;
+	};
+
 	PathPointDescriptor(IAISystem::ENavigationType navType = IAISystem::NAV_UNSET, const Vec3& vPos = ZERO) 
 		: vPos(vPos), pSONavData(0), navType(navType), navSOMethod(nSOmNone), navTypeCustomId(0) {}
 
@@ -120,6 +134,8 @@ struct PathPointDescriptor
 	uint16 navTypeCustomId;
 	
 	SmartObjectNavDataPtr pSONavData;
+	SmartObjectMNMData	soMNMData;
+
 	ENavSOMethod	navSOMethod;
 	bool IsEquivalent(const PathPointDescriptor& other) const
 	{
@@ -387,6 +403,8 @@ public:
 	virtual void Release() = 0;
 	virtual void CopyTo(INavPath *pRecipient) const = 0;
 	virtual INavPath *Clone() const = 0;
+
+	virtual NavigationMeshID GetMeshID() const = 0;
 
 	virtual int GetVersion() const = 0;
 	virtual void SetVersion(int version) = 0;

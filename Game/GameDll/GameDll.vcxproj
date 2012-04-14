@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Performance|Win32">
+      <Configuration>Performance</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Performance|x64">
+      <Configuration>Performance</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Profile Server Only|Win32">
       <Configuration>Profile Server Only</Configuration>
       <Platform>Win32</Platform>
@@ -46,10 +54,7 @@
     <ProjectName>CryGame</ProjectName>
     <ProjectGuid>{2652EA4E-BB2C-4DDC-BFD9-89FFC50A4403}</ProjectGuid>
     <RootNamespace>CryGame</RootNamespace>
-
-
-
-    <Keyword>Win32Proj</Keyword>
+<Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'" Label="Configuration">
@@ -62,6 +67,11 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -84,6 +94,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
@@ -109,6 +123,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(SolutionDir).\StandardSDKs.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
@@ -126,6 +144,10 @@
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(SolutionDir).\StandardSDKs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
@@ -152,7 +174,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GAMEDLL_EXPORTS;USE_CRY_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -161,7 +183,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\SDKs\EA\EAThread\lib\pc-vc-dev-debug;..\..\SDKs\EA\EAStdC\lib\pc-vc-dev-debug;..\..\SDKs\EA\EAAssert\lib\pc-vc-dev-debug;..\..\SDKs\EA\B4Bug\lib\pc-vc-dev-debug;..\..\SDKs\speex-1.0.5\lib\$(Platform);../../CryEngine/CryCommon/SolidShield;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\SDKs\speex-1.0.5\lib\$(Platform);../../CryEngine/CryCommon/SolidShield;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -185,7 +207,7 @@
     <ClCompile>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include;..\..\SDKs\EA\EAStdC\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GAMEDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -194,7 +216,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\SDKs\EA\EAThread\lib\pc64-vc-dev-debug;..\..\SDKs\EA\EAStdC\lib\pc64-vc-dev-debug;..\..\SDKs\EA\EAAssert\lib\pc64-vc-dev-debug;..\..\SDKs\EA\B4Bug\lib\pc64-vc-dev-debug;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -214,14 +236,14 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;EA_B4BUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\SDKs\EA\EAThread\lib\pc-vc-dev-opt;..\..\SDKs\EA\EAStdC\lib\pc-vc-dev-opt;..\..\SDKs\EA\EAAssert\lib\pc-vc-dev-opt;..\..\SDKs\EA\B4Bug\lib\pc-vc-dev-opt;../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <BaseAddress>@$(SolutionDir)BaseAddress.$(Platform).txt,GameDll</BaseAddress>
@@ -240,12 +262,12 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;EA_B4BUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\EA\EAThread\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAStdC\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAAssert\lib\pc64-vc-dev-opt;..\..\SDKs\EA\B4Bug\lib\pc64-vc-dev-opt;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -261,7 +283,23 @@
     <ClCompile>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'">
+    <ClCompile>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
@@ -286,7 +324,7 @@
     </ClCompile>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\EA\EAThread\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAStdC\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAAssert\lib\pc64-vc-dev-opt;..\..\SDKs\EA\B4Bug\lib\pc64-vc-dev-opt;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -297,13 +335,37 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
-    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;_RELEASE;PURE_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+    </ClCompile>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Win32'">
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;EA_B4BUG;DEDICATED_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;DEDICATED_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -319,7 +381,7 @@
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\SDKs\EA\EAThread\lib\pc-vc-dev-opt;..\..\SDKs\EA\EAStdC\lib\pc-vc-dev-opt;..\..\SDKs\EA\EAAssert\lib\pc-vc-dev-opt;..\..\SDKs\EA\B4Bug\lib\pc-vc-dev-opt;../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <DataExecutionPrevention>
@@ -338,15 +400,15 @@
     <ClCompile>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include;..\..\SDKs\EA\B4Bug\include;..\..\SDKs\EA\B4Bug\include\network_extensions;..\..\SDKs\EA\EAThread\include;..\..\SDKs\EA\EABase\include;..\..\SDKs\EA\EAStdC\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;EA_B4BUG;DEDICATED_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;..\..\CryEngine\CryAction;..\..\SDKs;..\..\SDKs\speex-1.0.5\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;DEDICATED_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\EA\EAThread\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAStdC\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAAssert\lib\pc64-vc-dev-opt;..\..\SDKs\EA\B4Bug\lib\pc64-vc-dev-opt;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -412,7 +474,7 @@
     </ClCompile>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\EA\EAThread\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAStdC\lib\pc64-vc-dev-opt;..\..\SDKs\EA\EAAssert\lib\pc64-vc-dev-opt;..\..\SDKs\EA\B4Bug\lib\pc64-vc-dev-opt;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../CryEngine/CryCommon/SolidShield;..\..\SDKs\speex-1.0.5\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -423,17 +485,14 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
-    <Lib>
-      <TargetMachine>MachineX64</TargetMachine>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GameDll.cpp">
-    </ClCompile>
+    <ClCompile Include="GameDll.cpp" />
     <ClCompile Include="GameStartup.cpp" />
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Flyer.cpp" />
     <ClCompile Include="FlyerMovementController.cpp" />
+    <ClCompile Include="HUD\UIGameEvents.cpp" />
     <ClCompile Include="ScriptBind_Actor.cpp" />
     <ClCompile Include="Shark.cpp" />
     <ClCompile Include="SharkMovementController.cpp" />
@@ -649,7 +708,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -658,6 +719,8 @@
     <ClInclude Include="AIDemoInput.h" />
     <ClInclude Include="Flyer.h" />
     <ClInclude Include="FlyerMovementController.h" />
+    <ClInclude Include="HUD\IUIGameEventSystem.h" />
+    <ClInclude Include="HUD\UIGameEvents.h" />
     <ClInclude Include="ScriptBind_Actor.h" />
     <ClInclude Include="Shark.h" />
     <ClInclude Include="SharkMovementController.h" />

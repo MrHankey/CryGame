@@ -328,7 +328,7 @@ UNIQUE_IFACE struct ITacticalPointSystem
 
 	// Start a new asynchronous query. Returns the id "ticket" for this query instance.
 	// Types needed to avoid confusion?
-	virtual TPSQueryTicket AsyncQuery( TPSQueryID queryID, const QueryContext &m_context, int flags, int nPoints, ITacticalPointResultsReceiver *pReciever ) = 0;
+	virtual TPSQueryTicket AsyncQuery( TPSQueryID queryID, const QueryContext &m_context, int flags, int nPoints, ITacticalPointResultsReceiver *pReceiver ) = 0;
 	
 	virtual void UnlockResults(TPSQueryTicket queryTicket) = 0;
 	virtual bool HasLockedResults(TPSQueryTicket queryTicket) const = 0;

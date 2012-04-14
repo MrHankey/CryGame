@@ -56,17 +56,14 @@ UNIQUE_IFACE struct IAIGroup
 	virtual IAIObject*	GetAttentionTarget(bool bHostileOnly, bool bLiveOnly) const = 0;
 	virtual Vec3				GetAveragePosition(eAvPositionMode mode = AVMODE_ANY, uint32 unitClass = UNIT_ALL) const = 0;
 	virtual int					GetUnitCount(uint32 unitPropMask=UPR_ALL) const = 0;
-#ifndef GAME_IS_CRYSIS2
 	/// Notifies tactical evaluation of specified state change.
 	virtual void				NotifyGroupTacticState(IAIObject* pRequester, int tac, int type, float param) = 0;
 	/// Returns tactical evaluation status of specified evaluation type.
 	virtual int					GetGroupTacticState(IAIObject* pRequester, int tac, int type, float param) = 0;
 	/// Returns tactical evaluation position of specified evaluation type.
 	virtual Vec3				GetGroupTacticPoint(IAIObject* pRequester, int tac, int type, float param) = 0;
-
 	/// Request a group readability sound; if the sound has been requested recently by one of the group members, return false
 	virtual bool				RequestReadabilitySound(int id, float duration) = 0;
-#endif
 	/// Gets the number of attention targets in the group
 	virtual int					GetTargetCount(bool bHostileOnly, bool bLiveOnly) const = 0;
 	/// triggers reinforcements state

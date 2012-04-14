@@ -14,27 +14,27 @@
 #ifndef __UISettings_H__
 #define __UISettings_H__
 
+#include "IUIGameEventSystem.h"
 #include <IFlashUI.h>
 #include <IGameFramework.h>
-#include <IPlayerProfiles.h>
 
 class CUISettings
-	: public IUIEventListener
+	: public IUIGameEventSystem
 	, public IUIModule
 {
 public:
 	CUISettings();
-	~CUISettings();
 
-	// IUIEventListener
-	virtual void OnEvent( const SUIEvent& event );
+	// IUIGameEventSystem
+	UIEVENTSYSTEM( "UISettings" );
+	virtual void InitEventSystem();
+	virtual void UnloadEventSystem();
+	virtual void LoadProfile( IPlayerProfile* pProfile );
+	virtual void SaveProfile( IPlayerProfile* pProfile ) const;
 
 	//IUIModule
 	virtual void Init();
 	virtual void Update(float fDelta);
-
-	void LoadProfile(IPlayerProfile* pProfile);
-	void SaveProfile(IPlayerProfile* pProfile);
 
 private:
 	// ui functions
@@ -44,22 +44,34 @@ private:
 	void SendGameSettingsChange();
 
 	// ui events
-	void OnSetGraphicSettings( const SUIEvent& event );
-	void OnSetResolution( const SUIEvent& event );
-	void OnSetSoundSettings( const SUIEvent& event );
-	void OnSetGameSettings( const SUIEvent& event );
+	void OnSetGraphicSettings( int resIndex, bool fullscreen );
+	void OnSetResolution( int resX, int resY, bool fullscreen );
+	void OnSetSoundSettings( float music, float sfx, float video );
+	void OnSetGameSettings( float sensitivity, bool invertMouse, bool invertController );
 
-	void OnGetResolutions( const SUIEvent& event );
-	void OnGetCurrGraphicsSettings( const SUIEvent& event );
-	void OnGetCurrSoundSettings( const SUIEvent& event );
-	void OnGetCurrGameSettings( const SUIEvent& event );
+	void OnGetResolutions();
+	void OnGetCurrGraphicsSettings();
+	void OnGetCurrSoundSettings();
+	void OnGetCurrGameSettings();
 
-	void OnGetLevels( const SUIEvent& event );
+	void OnGetLevels();
 
-	void OnLogoutUser( const SUIEvent& event );
+	void OnLogoutUser();
 
 private:
-	static SUIEventHelper<CUISettings> s_EventDispatcher;
+	enum EUIEvent
+	{
+		eUIE_GraphicSettingsChanged,
+		eUIE_SoundSettingsChanged,
+		eUIE_GameSettingsChanged,
+
+		eUIE_OnGetResolutions,
+		eUIE_OnGetResolutionItems,
+		eUIE_OnGetLevelItems,
+	};
+
+	SUIEventReceiverDispatcher<CUISettings> m_eventDispatcher;
+	SUIEventSenderDispatcher<EUIEvent> m_eventSender;
 	IUIEventSystem* m_pUIEvents;
 	IUIEventSystem* m_pUIFunctions;
 
@@ -76,19 +88,6 @@ private:
 	ICVar* m_pInvertController;
 
 	int m_currResId;
-
-	enum EUIEvent
-	{
-		eUIE_GraphicSettingsChanged,
-		eUIE_SoundSettingsChanged,
-		eUIE_GameSettingsChanged,
-
-		eUIE_OnGetResolutions,
-		eUIE_OnGetResolutionItems,
-		eUIE_OnGetLevelItems,
-	};
-
-	std::map< EUIEvent, uint > m_EventMap;
 
 	typedef std::vector< std::pair<int,int> > TResolutions;
 	TResolutions m_Resolutions;

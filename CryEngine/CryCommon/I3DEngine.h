@@ -56,10 +56,7 @@ struct IDeferredPhysicsEventManager;
 enum E3DEngineParameter
 {
 	E3DPARAM_HDR_DYNAMIC_POWER_FACTOR,
-	E3DPARAM_HDR_CONTRAST,
-	E3DPARAM_HDR_BLUE_SHIFT,
-	E3DPARAM_HDR_BLUE_SHIFT_THRESHOLD,
-
+	
 	E3DPARAM_SUN_COLOR,
 	E3DPARAM_SUN_COLOR_MULTIPLIER,
 
@@ -73,10 +70,14 @@ enum E3DEngineParameter
 
 	E3DPARAM_FOG_COLOR,
 	E3DPARAM_FOG_COLOR2,
-	E3DPARAM_FOG_USECOLORGRADIENT,
+	E3DPARAM_FOG_RADIAL_COLOR,
+
+	E3DPARAM_VOLFOG_HEIGHT_DENSITY,
+	E3DPARAM_VOLFOG_HEIGHT_DENSITY2,
+
+	E3DPARAM_VOLFOG_GRADIENT_CTRL,
 
 	E3DPARAM_VOLFOG_GLOBAL_DENSITY,
-	E3DPARAM_VOLFOG_ATMOSPHERE_HEIGHT,
 	E3DPARAM_VOLFOG_RAMP,
 
 	E3DPARAM_SKYLIGHT_SUN_INTENSITY,
@@ -104,8 +105,9 @@ enum E3DEngineParameter
 	E3DPARAM_NIGHSKY_MOON_OUTERCORONA_COLOR,
 	E3DPARAM_NIGHSKY_MOON_OUTERCORONA_SCALE,
 
-	E3DPARAM_CLOUDSHADING_SUNLIGHT_MULTIPLIER,
-	E3DPARAM_CLOUDSHADING_SKYLIGHT_MULTIPLIER,
+	E3DPARAM_CLOUDSHADING_MULTIPLIERS,
+	E3DPARAM_CLOUDSHADING_SUNCOLOR,
+	E3DPARAM_CLOUDSHADING_SKYCOLOR,
 
 	E3DPARAM_CORONA_SIZE,
 
@@ -130,7 +132,16 @@ enum E3DEngineParameter
 
 	E3DPARAM_DAY_NIGHT_INDICATOR,
 
-  // --------------------------------------
+  // Tone mapping tweakables
+  E3DPARAM_HDR_FILMCURVE_SHOULDER_SCALE,
+  E3DPARAM_HDR_FILMCURVE_LINEAR_SCALE,
+  E3DPARAM_HDR_FILMCURVE_TOE_SCALE,
+  E3DPARAM_HDR_FILMCURVE_WHITEPOINT,
+	E3DPARAM_HDR_BLUE_SHIFT,
+	E3DPARAM_HDR_BLUE_SHIFT_THRESHOLD,
+  E3DPARAM_HDR_COLORGRADING_COLOR_SATURATION,
+  E3DPARAM_HDR_COLORGRADING_COLOR_CONTRAST,
+  E3DPARAM_HDR_COLORGRADING_COLOR_BALANCE,
 
   E3DPARAM_COLORGRADING_COLOR_SATURATION,
   E3DPARAM_COLORGRADING_FILTERS_PHOTOFILTER_COLOR,
@@ -835,9 +846,6 @@ UNIQUE_IFACE struct ITimeOfDay
 	enum ETimeOfDayParamID
 	{
 		PARAM_HDR_DYNAMIC_POWER_FACTOR,
-		PARAM_HDR_CONTRAST,
-		PARAM_HDR_BLUE_SHIFT,
-		PARAM_HDR_BLUE_SHIFT_THRESHOLD,
 
 		PARAM_TERRAIN_OCCL_MULTIPLIER,
 		PARAM_SSAO_MULTIPLIER,
@@ -859,12 +867,22 @@ UNIQUE_IFACE struct ITimeOfDay
 
 		PARAM_FOG_COLOR,
 		PARAM_FOG_COLOR_MULTIPLIER,
+		PARAM_VOLFOG_HEIGHT,
+		PARAM_VOLFOG_DENSITY,
 		PARAM_FOG_COLOR2,
 		PARAM_FOG_COLOR2_MULTIPLIER,
+		PARAM_VOLFOG_HEIGHT2,
+		PARAM_VOLFOG_DENSITY2,
+		PARAM_VOLFOG_HEIGHT_OFFSET,
+
+		PARAM_FOG_RADIAL_COLOR,
+		PARAM_FOG_RADIAL_COLOR_MULTIPLIER,
+		PARAM_VOLFOG_RADIAL_SIZE,
+		PARAM_VOLFOG_RADIAL_LOBE,
+
+		PARAM_VOLFOG_FINAL_DENSITY_CLAMP,
 
 		PARAM_VOLFOG_GLOBAL_DENSITY,
-		PARAM_VOLFOG_ATMOSPHERE_HEIGHT,
-		PARAM_VOLFOG_ARTIST_TWEAK_DENSITY_OFFSET,
 		PARAM_VOLFOG_RAMP_START,
 		PARAM_VOLFOG_RAMP_END,
 		PARAM_VOLFOG_RAMP_INFLUENCE,
@@ -899,6 +917,12 @@ UNIQUE_IFACE struct ITimeOfDay
 
 		PARAM_CLOUDSHADING_SUNLIGHT_MULTIPLIER,
 		PARAM_CLOUDSHADING_SKYLIGHT_MULTIPLIER,
+		PARAM_CLOUDSHADING_SUNLIGHT_CUSTOM_COLOR,
+		PARAM_CLOUDSHADING_SUNLIGHT_CUSTOM_COLOR_MULTIPLIER,
+		PARAM_CLOUDSHADING_SUNLIGHT_CUSTOM_COLOR_INFLUENCE,
+		PARAM_CLOUDSHADING_SKYLIGHT_CUSTOM_COLOR,
+		PARAM_CLOUDSHADING_SKYLIGHT_CUSTOM_COLOR_MULTIPLIER,
+		PARAM_CLOUDSHADING_SKYLIGHT_CUSTOM_COLOR_INFLUENCE,
 
 		PARAM_SUN_SHAFTS_VISIBILITY,
 		PARAM_SUN_RAYS_VISIBILITY,
@@ -912,6 +936,17 @@ UNIQUE_IFACE struct ITimeOfDay
 
 		PARAM_SKYBOX_MULTIPLIER,
 
+    PARAM_HDR_FILMCURVE_SHOULDER_SCALE,
+    PARAM_HDR_FILMCURVE_LINEAR_SCALE,
+    PARAM_HDR_FILMCURVE_TOE_SCALE,
+    PARAM_HDR_FILMCURVE_WHITEPOINT,
+
+		PARAM_HDR_BLUE_SHIFT,
+		PARAM_HDR_BLUE_SHIFT_THRESHOLD,
+    PARAM_HDR_COLORGRADING_COLOR_SATURATION,
+    PARAM_HDR_COLORGRADING_COLOR_CONTRAST,
+    PARAM_HDR_COLORGRADING_COLOR_BALANCE,
+    
 		PARAM_COLORGRADING_COLOR_SATURATION,
 		PARAM_COLORGRADING_COLOR_CONTRAST,
 		PARAM_COLORGRADING_COLOR_BRIGHTNESS,
@@ -935,6 +970,15 @@ UNIQUE_IFACE struct ITimeOfDay
 
 		PARAM_COLORGRADING_DOF_FOCUSRANGE,
 		PARAM_COLORGRADING_DOF_BLURAMOUNT,
+
+		PARAM_SHADOWSC0_BIAS,
+    PARAM_SHADOWSC0_SLOPE_BIAS,
+		PARAM_SHADOWSC1_BIAS,
+    PARAM_SHADOWSC1_SLOPE_BIAS,
+		PARAM_SHADOWSC2_BIAS,
+    PARAM_SHADOWSC2_SLOPE_BIAS,
+		PARAM_SHADOWSC3_BIAS,
+		PARAM_SHADOWSC3_SLOPE_BIAS,
 
 		PARAM_TOTAL
 	};
@@ -1528,7 +1572,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	// Summary:
 	//     Gets HDR setup parameters.
 	// Return Value:
-	virtual void GetHDRSetupParams	(Vec4 pParams[5]) const = 0; 
+	virtual void GetHDRSetupParams	(Vec4 pParams[7]) const = 0; 
 
 	// Summary:
 	//     Removes all particles and decals from the world.
@@ -1613,34 +1657,14 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	// Summary:
 	//     Gets the fog color.
 	virtual Vec3 GetFogColor( )=0;
-	
-	// Summary:
-	//   Gets volumetric fog settings.
-	virtual void GetVolumetricFogSettings( float& globalDensity, float& atmosphereHeight, float& artistTweakDensityOffset, float& globalDensityMultiplierLDR ) = 0;
-	
-	// Summary:
-	//   Sets volumetric fog settings.
-	virtual void SetVolumetricFogSettings( float globalDensity, float atmosphereHeight, float artistTweakDensityOffset ) = 0;
-
-	// Summary:
-	//   Gets volumetric fog modifiers.
-	virtual void GetVolumetricFogModifiers(float& globalDensityModifier, float& atmosphereHeightModifier) = 0;
-
-	// Summary:
-	//   Sets volumetric fog modifiers.
-	virtual void SetVolumetricFogModifiers(float globalDensityModifier, float atmosphereHeightModifier, bool reset = false) = 0;
 
 	// Summary:
 	//   Gets various sky light parameters.
-	virtual void GetSkyLightParameters( Vec3& sunIntensity, float& Km, float& Kr, float& g, Vec3& rgbWaveLengths ) = 0;
+	virtual void GetSkyLightParameters( Vec3& sunDir, Vec3& sunIntensity, float& Km, float& Kr, float& g, Vec3& rgbWaveLengths ) = 0;
 
 	// Summary:
 	//   Sets various sky light parameters.
-	virtual void SetSkyLightParameters( const Vec3& sunIntensity, float Km, float Kr, float g, 
-		const Vec3& rgbWaveLengths, bool forceImmediateUpdate = false ) = 0;
-	
-	virtual void GetCloudShadingMultiplier( float& sunLightMultiplier, float& skyLightMultiplier ) = 0;
-	virtual void SetCloudShadingMultiplier( float sunLightMultiplier, float skyLightMultiplier ) = 0;
+	virtual void SetSkyLightParameters( const Vec3& sunDir, const Vec3& sunIntensity, float Km, float Kr, float g, const Vec3& rgbWaveLengths, bool forceImmediateUpdate = false ) = 0;
 
 	virtual IAutoCubeMapRenderNode* GetClosestAutoCubeMap(const Vec3& p) = 0;
 
@@ -1651,8 +1675,31 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	//   value - becomes clamped in range 0.01 .. 100
 	virtual void SetHDRDynamicMultiplier( const float value ) = 0;
 
-  virtual void SetRenderIntoShadowmap( int nLod ) = 0;
-  virtual bool _IsRenderIntoShadowmap() const = 0;
+	enum EShadowMapType
+	{
+		SHADOW_MAP_NONE = 0,
+		SHADOW_MAP_GSM0,
+		SHADOW_MAP_GSM1,
+		SHADOW_MAP_GSM2,
+		SHADOW_MAP_GSM3,
+		SHADOW_MAP_GSM4,
+		SHADOW_MAP_GSM5,
+		SHADOW_MAP_GSM6,
+		SHADOW_MAP_GSM7,
+		SHADOW_MAP_LOCAL,
+		SHADOW_MAP_REFLECTIVE,
+		SHADOW_MAP_VOXEL
+	};
+
+	// Set flag that we are rendering into a shadow map of given type
+	virtual void SetShadowMapRendering( EShadowMapType eShadowMapType ) = 0;
+	virtual void SetShadowMapRendering( int nLightFlags, int nShadowMapLod ) = 0;
+	// Return true if rendering into any shadow map
+	virtual bool IsRenderingIntoShadowMap() const = 0;
+	// Return true if tessellation is allowed (by cvars) into currently set shadow map LOD
+	virtual bool IsTessellationAllowedForShadowMap() const = 0;
+	// Return true if tessellation is allowed for given render object
+	virtual bool IsTessellationAllowed(const CRenderObject *pObj, bool bIgnoreShadowPass = false) const = 0;
 
 	// allows to modify material on render nodes at run-time (make sure it is properly restored back)
 	virtual void SetRenderNodeMaterialAtPosition( EERType eNodeType, const Vec3 & vPos, IMaterial * pMat ) = 0;
@@ -2118,7 +2165,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	virtual void ResetPostEffects(bool bOnSpecChange = false) const = 0;
 
 	virtual void SetShadowsGSMCache(bool bCache) = 0;
-    
+
 	// Summary:
 	//	 Physicalizes area if not physicalized yet.
 	virtual void CheckPhysicalized(const Vec3 & vBoxMin, const Vec3 & vBoxMax) = 0;
@@ -2433,8 +2480,6 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 
 	// Return true if terrain texture streaming takes place
 	virtual bool IsTerrainTextureStreamingInProgress() = 0;
-
-	static const int LOCAL_LIGHT_SHADOW = 0x8;
 };
 
 //==============================================================================================

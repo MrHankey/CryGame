@@ -94,37 +94,12 @@ typedef void *EVENT_HANDLE;
 // Multi platform Hi resolution ticks function, should only be used for profiling.
 //////////////////////////////////////////////////////////////////////////
 
-//#define USE_MULTICORE_SAVE_TIMING
-
 #if defined(_CPU_SSE) && !defined(NO_XENON_INTRINSICS)
 //# define XENON_INTRINSICS
 //# include "Cry_XMath.h"
 #endif //defined(_CPU_SSE) && !defined(NO_XENON_INTRINSICS)
 
-
-int64 CryQueryPerformanceCounter();
-
-__forceinline int64 CryGetTicks()
-{
-	__asm {
-		rdtsc
-	}
-//#if defined(_CPU_X86)
-//	int64 nTime;
-//	int64 *pnTime = &nTime;
-//	__asm {
-//		mov ebx, pnTime
-//			rdtsc
-//			mov [ebx], eax
-//			mov [ebx+4], edx
-//	}
-//#elif defined(WIN32)
-//	LARGE_INTEGER li;
-//	QueryPerformanceCounter( &li );
-//	return li.QuadPart;
-//#endif
-	//return CryQueryPerformanceCounter();
-}
+int64 CryGetTicks();
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p)			{ if(p) { delete (p);		(p)=NULL; } }

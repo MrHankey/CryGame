@@ -401,7 +401,7 @@ bool CHitDeathReactions::OnAnimationEvent(const AnimEventInstance &event)
 
 			//--- Initiate rag-doll between now & the end of the animation
 			CAnimationPlayerProxy *animPlayerProxy = m_actor.GetAnimatedCharacter()->GetAnimationPlayerProxy(0);
-			const float expectedDurationSeconds = animPlayerProxy ? animPlayerProxy->GetTopAnimation(m_actor.GetEntity(), 0)->m_fAnimTime : NULL;
+			const float expectedDurationSeconds = animPlayerProxy ? animPlayerProxy->GetTopAnimation(m_actor.GetEntity(), 0)->m_fAnimTime : -1;
 			if (0 <= expectedDurationSeconds)
 			{
 				m_fReactionEndTime = m_fReactionCounter + (GetRandomProbability() * expectedDurationSeconds);
@@ -1620,7 +1620,7 @@ void CHitDeathReactions::StartCollisionReaction(const Vec3& vNormal, const Vec3&
 }
 
 //////////////////////////////////////////////////////////////////////////
-/// GetRelativeCardinalDirection returns which 90º cone (for forward, back,
+/// GetRelativeCardinalDirection returns which 90 degrees cone (for forward, back,
 /// left and right) the direction vector vDir2 is pointing to compared to
 /// direction vector vDir1
 //////////////////////////////////////////////////////////////////////////

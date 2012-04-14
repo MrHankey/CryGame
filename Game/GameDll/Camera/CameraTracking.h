@@ -8,7 +8,7 @@ Description: Camera code dealing with obstacle avoidance and automatic movement.
 
 -------------------------------------------------------------------------
 History:
-- 12:2008 : Created By Jan Müller
+- 12:2008 : Created By Jan Mueller
 
 *************************************************************************/
 

@@ -78,19 +78,7 @@ typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
 
 typedef ULONG_PTR DWORD_PTR, *PDWORD_PTR;
 
-//////////////////////////////////////////////////////////////////////////
-// Multi platform Hi resolution ticks function, should only be used for profiling.
-//////////////////////////////////////////////////////////////////////////
-
-//#define USE_MULTICORE_SAVE_TIMING
-
-int64 CryQueryPerformanceCounter();
-
-__forceinline int64 CryGetTicks()
-{
-	//return __rdtsc();
-	return CryQueryPerformanceCounter();
-}
+int64 CryGetTicks();
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p)			{ if(p) { delete (p);		(p)=NULL; } }

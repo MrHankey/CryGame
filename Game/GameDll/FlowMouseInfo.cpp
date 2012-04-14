@@ -194,8 +194,8 @@ public:
 			OutputPortConfig<int>("OnReleased", _HELP("Returns an integer which represents the released mouse key")),
 			OutputPortConfig<int>("X", _HELP("Mouse cursor x position")),
 			OutputPortConfig<int>("Y", _HELP("Mouse cursor y position")),
-			OutputPortConfig_Void("WheelUp", _HELP("Mousewheel movement")),
-			OutputPortConfig_Void("WheelDown", _HELP("Mousewheel movement")),
+			OutputPortConfig_Void("WheelUp", _HELP("Mouse wheel moved up")),
+			OutputPortConfig_Void("WheelDown", _HELP("Mouse wheel moved down")),
 			OutputPortConfig<Vec3>("HitPos", _HELP("Hit position of the mouse cursor in world coordinates")),
 			OutputPortConfig<Vec3>("HitDir", _HELP("Direction from the camera position to the mouse cursor position")),
 			OutputPortConfig<EntityId>("SelectedEntityIDs", _HELP("EntityID's of the selected entities")),
@@ -471,7 +471,6 @@ public:
 			ActivateOutput(&m_actInfo, EOP_OnMouseReleased, 8);
 		}
 
-		//Mousewheel listener; some sort of delta would be nice but this is a good stopgap - Ruan
 		if(rInputEvent.state == eIS_Pressed)
 		{
 			if(rInputEvent.keyId == eKI_MouseWheelUp)
@@ -488,7 +487,6 @@ public:
 		{
 			m_bAdd = false;
 		}
-
 
 		return false;	
 	}

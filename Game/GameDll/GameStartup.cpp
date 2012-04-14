@@ -7,7 +7,7 @@ $DateTime$
 
 -------------------------------------------------------------------------
 History:
-- 2:8:2004   15:20 : Created by Márcio Martins
+- 2:8:2004   15:20 : Created by Marcio Martins
 
 *************************************************************************/
 
@@ -31,6 +31,10 @@ History:
 
 #include "Testing/AutoTester.h"
 #include <IJobManager.h>
+
+#if defined(WIN32) && !defined(XENON)
+#include <WindowsX.h> // for SubclassWindow()
+#endif
 
 static CAutoTester s_autoTesterSingleton;
 
@@ -664,6 +668,10 @@ bool CGameStartup::InitFramework(SSystemInitParams &startupParams)
 			return false;
 		}
 	}
+#if defined(WIN32) && !defined(XENON)
+	else if (startupParams.bBrowserMode)
+		SubclassWindow((HWND)startupParams.hWnd, (WNDPROC)CGameStartup::WndProc);
+#endif
 
 	// initialize the engine
 	if (!m_pFramework->Init(startupParams))

@@ -66,6 +66,7 @@ struct GoalParams;
 #define AIOBJECT_WAYPOINT			12
 #define AIOBJECT_HIDEPOINT		13
 #define AIOBJECT_SNDSUPRESSOR	14
+#define AIOBJECT_NAV_SEED		15
 #define AIOBJECT_HELICOPTER			40
 #define AIOBJECT_HELICOPTERCRYSIS2 41
 #define AIOBJECT_GUNFIRE		42
@@ -939,7 +940,7 @@ struct SAIActorTargetRequest
 		vApproachDir(ZERO),
 		vAnimPos(ZERO),
 		vAnimDir(ZERO),
-		nVehicleSeat(0),
+		vehicleSeat(0),
 		fDirectionTolerance(0.f),
 		fStartArcAngle(0.f),
 		fStartWidth(0.f),
@@ -959,18 +960,18 @@ struct SAIActorTargetRequest
 		vApproachDir.zero();
 		vAnimPos.zero();
 		vAnimDir.zero();
-		nVehicleSeat = 0;
+		vehicleSeat = 0;
 		fDirectionTolerance = 0.f;
 		fStartArcAngle = 0.f;
 		fStartWidth = 0.f;
 		stance = STANCE_NULL;
 		pQueryStart = NULL;
 		pQueryEnd = NULL;
-		sVehicleName.clear();
-		sAnimation.clear();
 		bSignalAnimation = true;
 		bProjectEndPoint = true;
 		bLowerPrecision = false;
+		vehicleName = "";
+		animation = "";
 	}
 
 	void Serialize(TSerialize ser);
@@ -980,12 +981,12 @@ struct SAIActorTargetRequest
 	Vec3 vApproachDir;
 	Vec3 vAnimPos;
 	Vec3 vAnimDir;
-	string sVehicleName;
-	int nVehicleSeat;
+	string vehicleName;
+	int vehicleSeat;
 	float fDirectionTolerance;
 	float fStartArcAngle;
 	float fStartWidth;
-	string sAnimation;
+	string animation;
 	EStance stance;
 	TAnimationGraphQueryID* pQueryStart;
 	TAnimationGraphQueryID* pQueryEnd;

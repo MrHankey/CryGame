@@ -103,6 +103,13 @@ struct ParticleTarget
 	}
 };
 
+struct EmitParticleData
+{
+	IStatObj*					pStatObj;		// The displayable geometry object for the entity. If NULL, uses emitter settings for sprite or geometry.
+	IPhysicalEntity*	pPhysEnt;		// A physical entity which controls the particle. If NULL, uses emitter settings to physicalise or move particle.
+	QuatTS*						pLocation;	// Specified location for particle. If NULL, set from effect params.
+	Vec3*							pVel;				// Specified velocity for particle. If NULL, set from effect params.
+};
 
 struct ParticleParams;
 
@@ -358,15 +365,28 @@ UNIQUE_IFACE struct IParticleEmitter : public CMultiThreadRefCount, public IRend
 	virtual void Update() = 0;
 
 	// Summary:
-	//		 Programmatically add a particle to emitter for rendering.
-	//		 With no arguments, spawns a particle according to emitter settings.
+	//		 Programmatically adds particles to emitter for rendering.
+	//		 With no arguments, spawns particles according to emitter settings.
 	//		 Specific objects can be passed for programmatic control.
 	// Arguments:
-	//		 pLocation	- Specified location for particle. If 0, set from effect params.
-	//		 pVel		- Specified velocity for particle. If 0, set from effect params.
-	//		 pStatObj	- The displayable geometry object for the entity. If 0, uses emitter settings for sprite or geometry.
-	//       pPhysEnt	- A physical entity which controls the particle. If 0, uses emitter settings to physicalise or move particle.
-	virtual void EmitParticle( IStatObj* pStatObj = NULL, IPhysicalEntity* pPhysEnt = NULL, QuatTS* pLocation = NULL, Vec3* pVel = NULL ) = 0;
+	//		 nCount - Number of particles to spawn
+	//		 pEmitParticleDataArray (Array of particle data for each particle)
+	//								.pLocation	- Specified location for particle. If 0, set from effect params.
+	//								.pVel		- Specified velocity for particle. If 0, set from effect params.
+	//								.pStatObj	- The displayable geometry object for the entity. If 0, uses emitter settings for sprite or geometry.
+	//								.pPhysEnt	- A physical entity which controls the particle. If 0, uses emitter settings to physicalise or move particle.
+	virtual void EmitParticles( uint nCount, const EmitParticleData* aEmitParticleData = NULL ) = 0;
+
+	void EmitParticles( Array<const EmitParticleData> array )
+	{
+		EmitParticles( array.size(), array.begin() );
+	}
+
+	void EmitParticle( IStatObj* pStatObj = NULL, IPhysicalEntity* pPhysEnt = NULL, QuatTS* pLocation = NULL, Vec3* pVel = NULL )
+	{
+		EmitParticleData EmitData = { pStatObj, pPhysEnt, pLocation, pVel };
+		EmitParticles(1, &EmitData);
+	}
 
 	virtual bool UpdateStreamableComponents( float fImportance, Matrix34A& objMatrix, IRenderNode* pRenderNode, float fEntDistance, bool bFullUpdate, int nLod ) = 0;
 
@@ -635,12 +655,7 @@ class CParticleLightProfileSection
 {
 public:
 	CParticleLightProfileSection() 
-	: m_nTicks( CryGetTicks() ) 
-#   if EMBED_PHYSICS_AS_FIBER
-	, m_nYields(JobManager::Fiber::FiberYieldTime())
-#   else 
-		, m_nYields()
-#   endif 
+		: m_nTicks( ITimer::GetNonFiberTicks() )
 	{
 #ifdef SNTUNER
 		snPushMarker("Particles");
@@ -649,51 +664,34 @@ public:
 	~CParticleLightProfileSection() 
 	{ 
 		IParticleManager *pPartMan = gEnv->p3DEngine->GetParticleManager();
-#   if EMBED_PHYSICS_AS_FIBER
-		uint64 nYields = JobManager::Fiber::FiberYieldTime(); 
-#   else 
-		uint64 nYields = 0ULL; 
-#   endif 
 		IF( pPartMan != NULL, 1)
 		{
-			pPartMan->AddFrameTicks((CryGetTicks()-m_nTicks)-(nYields-m_nYields));
+			pPartMan->AddFrameTicks(ITimer::GetNonFiberTicks() - m_nTicks);
 		}
 #ifdef SNTUNER
-			snPopMarker();
+		snPopMarker();
 #endif
 	}
 private:
 	uint64 m_nTicks;
-	uint64 m_nYields; 
 };
 
 class CParticleLightProfileSectionSyncTime
 {
 public:
 	CParticleLightProfileSectionSyncTime() 
-	: m_nTicks( CryGetTicks() ) 
-#   if EMBED_PHYSICS_AS_FIBER
-		, m_nYields(JobManager::Fiber::FiberYieldTime())
-#   else 
-		, m_nYields()
-#   endif 
+	: m_nTicks( ITimer::GetNonFiberTicks() ) 
 	{}
 	~CParticleLightProfileSectionSyncTime() 
 	{ 
 		IParticleManager *pPartMan = gEnv->p3DEngine->GetParticleManager();
-#   if EMBED_PHYSICS_AS_FIBER
-		uint64 nYields = JobManager::Fiber::FiberYieldTime(); 
-#   else 
-		uint64 nYields = 0ULL; 
-#   endif 
 		IF( pPartMan != NULL, 1)
 		{
-			pPartMan->AddFrameSyncTicks((CryGetTicks()-m_nTicks)-(nYields-m_nYields));
+			pPartMan->AddFrameSyncTicks(ITimer::GetNonFiberTicks() - m_nTicks);
 		}
 	}
 private:
 	uint64 m_nTicks;
-	uint64 m_nYields; 
 };
 
 	#define PARTICLE_LIGHT_PROFILER() CParticleLightProfileSection _particleLightProfileSection;

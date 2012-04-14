@@ -22,9 +22,6 @@
     <Filter Include="EditorGame Files">
       <UniqueIdentifier>{f10991c2-3a38-4825-bea0-f6bdaa2ca043}</UniqueIdentifier>
     </Filter>
-    <Filter Include="EditorGame Files\OrganicMotion">
-      <UniqueIdentifier>{ebf89f6a-c64c-4475-a471-1d943b4c9bc0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game Files">
       <UniqueIdentifier>{574a7f99-de83-4932-bedd-832106cf565b}</UniqueIdentifier>
     </Filter>
@@ -191,9 +188,6 @@
     </ClCompile>
     <ClCompile Include="EquipmentSystemInterface.cpp">
       <Filter>EditorGame Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OrganicMotion\OrganicMotionClient.cpp">
-      <Filter>EditorGame Files\OrganicMotion</Filter>
     </ClCompile>
     <ClCompile Include="BulletTime.cpp">
       <Filter>Game Files</Filter>
@@ -737,6 +731,9 @@
     </ClCompile>
     <ClCompile Include="GameStateRecorder.cpp" />
     <ClCompile Include="StdAfx.cpp" />
+    <ClCompile Include="HUD\UIGameEvents.cpp">
+      <Filter>HUD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStartup.h">
@@ -825,18 +822,6 @@
     </ClInclude>
     <ClInclude Include="EquipmentSystemInterface.h">
       <Filter>EditorGame Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OrganicMotion\omsdktypes.h">
-      <Filter>EditorGame Files\OrganicMotion</Filter>
-    </ClInclude>
-    <ClInclude Include="OrganicMotion\OrganicMotionClient.h">
-      <Filter>EditorGame Files\OrganicMotion</Filter>
-    </ClInclude>
-    <ClInclude Include="OrganicMotion\SDKClientFactory.h">
-      <Filter>EditorGame Files\OrganicMotion</Filter>
-    </ClInclude>
-    <ClInclude Include="OrganicMotion\sdkclientinterfaces.h">
-      <Filter>EditorGame Files\OrganicMotion</Filter>
     </ClInclude>
     <ClInclude Include="BulletTime.h">
       <Filter>Game Files</Filter>
@@ -1333,6 +1318,12 @@
     <ClInclude Include="GameStateRecorder.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="HUD\UIGameEvents.h">
+      <Filter>HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="HUD\IUIGameEventSystem.h">
+      <Filter>HUD</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="GameActions.actions">

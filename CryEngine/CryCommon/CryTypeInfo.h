@@ -33,24 +33,6 @@ bool FromString(CCryName& val, const char* s);
 //---------------------------------------------------------------------------
 // Helper classes for type info
 
-#define OPT_STRUCT(Struc) \
-	typedef Struc TThis; \
-	Struc() { memset(this, -init, sizeof(*this)); }
-
-#define VAR_OPT(Type, Var) \
-	Type Var; \
-	TThis& Var##_(Type const& val) { Var = val; return *this; }
-
-#define BIT_STRUCT(Struc,Int) \
-	typedef Struc TThis; typedef Int TInt; \
-	TInt Mask() const { return *(const TInt*)this; } \
-	TInt& Mask() { assert(sizeof(TThis) == sizeof(TInt)); return *(TInt*)this; } \
-	Struc(TInt init = 0) { Mask() = init; }
-
-#define BIT_OPT(Var) \
-	TInt Var: 1; \
-	TThis& Var##_(int val = 1) { Var = val; return *this; }
-
 // Specify options for converting data to/from strings
 struct FToString
 {
@@ -135,7 +117,7 @@ struct CTypeInfo
 		{ return FromValue(data, &value, TypeInfo(&value)); }
 
 	virtual bool ValueEqual(const void* data, const void* def_data = 0) const
-		{ return ToString(data, FToString().SkipDefault_().TruncateSub_(), def_data).empty(); }
+		{ return ToString(data, FToString().SkipDefault(1).TruncateSub(1), def_data).empty(); }
 
 	virtual bool GetLimit(ENumericLimit eLimit, float& fVal) const
 		{ return false; }

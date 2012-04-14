@@ -6,6 +6,7 @@
 #include "VertexFormats.h"
 #include <IMaterial.h>
 #include <Cry_Geo.h>
+#include <IJobManager.h>
 
 class CMesh;
 struct IIndexedMesh;
@@ -21,9 +22,9 @@ struct GeomQuery;
 enum ERenderMeshType
 {
   eRMT_Static = 0,
-  eRMT_KeepSystem = 1,
+	eRMT_Dynamic = 1, 
+  eRMT_KeepSystem = 2,
 };
-
 
 //! structure for tangent basises storing
 struct TangData
@@ -39,7 +40,7 @@ struct TangData
 #define FSM_VOXELS        4
 #define FSM_CREATE_DEVICE_MESH 8
 #define FSM_SETMESH_ASYNC 16
-#define FSM_SUPPORT_HW_TESSELATION 32
+#define FSM_SUPPORT_HW_TESSELLATION 32
 #define FSM_IGNORE_TEXELDENSITY	64
 
 // Invalidate video buffer flags
@@ -119,6 +120,27 @@ UNIQUE_IFACE struct IRenderMesh
 			nPrimetiveType(prtTriangleList),nRenderChunkCount(0),nClientTextureBindID(0),bOnlyVideoBuffer(false),bPrecache(true),bLockForThreadAccess(false) {}
 	};
 
+	struct ThreadAccessLock
+	{
+		ThreadAccessLock(IRenderMesh* pRM)
+			: m_pRM(pRM)
+		{
+			m_pRM->LockForThreadAccess();
+		}
+
+		~ThreadAccessLock()
+		{
+			m_pRM->UnLockForThreadAccess();
+		}
+
+	private:
+		ThreadAccessLock(const ThreadAccessLock&);
+		ThreadAccessLock& operator = (const ThreadAccessLock&);
+
+	private:
+		IRenderMesh* m_pRM;
+	};
+
   //////////////////////////////////////////////////////////////////////////
   // Reference Counting.
   virtual void AddRef() = 0;
@@ -170,6 +192,7 @@ UNIQUE_IFACE struct IRenderMesh
   virtual void SetVertexContainer(IRenderMesh *pBuf) = 0;
   virtual PodArray<CRenderChunk>& GetChunks() = 0;
   virtual PodArray<CRenderChunk>* GetChunksSkinned() = 0;
+  virtual PodArray<CRenderChunk>* GetChunksSubObjects() = 0;
   virtual void SetBBox(const Vec3& vBoxMin, const Vec3& vBoxMax) = 0;
   virtual void GetBBox(Vec3& vBoxMin, Vec3& vBoxMax) = 0;
   virtual void UpdateBBoxFromMesh() = 0;
@@ -177,6 +200,7 @@ UNIQUE_IFACE struct IRenderMesh
   virtual void SetPhysVertexMap(uint32 * pVtxMap) = 0;
   virtual bool IsEmpty() = 0;
 
+	virtual byte *GetPosPtrNoCache(int32& nStride, uint32 nFlags, int32 nOffset=0) = 0;
   virtual byte *GetPosPtr(int32& nStride, uint32 nFlags, int32 nOffset=0) = 0;
   virtual byte *GetColorPtr(int32& nStride, uint32 nFlags, int32 nOffset=0) = 0;
   virtual byte *GetNormPtr(int32& nStride, uint32 nFlags, int32 nOffset=0) = 0;
@@ -224,8 +248,8 @@ UNIQUE_IFACE struct IRenderMesh
 	virtual void LockForThreadAccess() = 0;
 	virtual void UnLockForThreadAccess()= 0;
 
-	virtual void SetTesselatedRenderMeshVersion(IRenderMesh * pTesselated) = 0;
-	virtual IRenderMesh * GetTesselatedRenderMeshVersion() = 0;
+	// Sets the async update state - will sync before rendering to this 
+	virtual volatile int* SetAsyncUpdateState(void) = 0;
 };
 
 struct SBufferStream

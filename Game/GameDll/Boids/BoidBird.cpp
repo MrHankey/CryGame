@@ -18,6 +18,7 @@
 #include "BirdsFlock.h"
 #include <ICryAnimation.h>
 #include <GameUtils.h>
+#include <IBreakableManager.h>
 
 #define MAX_BIRDS_DISTANCE 300
 

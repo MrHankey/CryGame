@@ -31,10 +31,10 @@ protected:
 
 
 
-	static HRESULT __stdcall CommandProcessor( LPCSTR pCommand, LPSTR pResponse, DWORD response, PDM_CMDCONT pdmcc );
-	static char s_pCommand[128];
-	static char s_pResponse[128];
-	static volatile bool s_commandWaiting;
+
+
+
+
 
 
 private:

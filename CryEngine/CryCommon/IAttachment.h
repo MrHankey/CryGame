@@ -408,6 +408,15 @@ public:
 		m_pEffect = gEnv->pParticleManager->FindEffect(effectName,"Character Attachment",true);
 	}
 
+	CEffectAttachment(IParticleEffect* pParticleEffect, const Vec3 &offset, const Vec3 &dir, f32 scale)
+		:	m_offset(offset),
+		m_dir(dir),
+		m_scale(scale),
+		m_pEmitter(0)
+	{
+		m_pEffect = pParticleEffect;
+	}
+
 	virtual ~CEffectAttachment()
 	{
 		if (m_pEmitter)

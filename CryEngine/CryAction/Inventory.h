@@ -8,7 +8,7 @@ Description: Inventory GameObject Extension
 
 -------------------------------------------------------------------------
 History:
-- 29:8:2005   14:27 : Created by Márcio Martins
+- 29:8:2005   14:27 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __INVENTORY_H__
@@ -199,6 +199,8 @@ public:
 	virtual int GetCountOfClass(const char *className) const;
 	virtual int GetCountOfCategory(const char *categoryName) const;
 	virtual int GetCountOfUniqueId(uint8 uniqueId) const;
+
+	virtual int GetSlotCount(int slotId) const;
 	
 	virtual EntityId GetItem(int slotId) const;
 	virtual EntityId GetItemByClass(IEntityClass *pClass, IItem *pIgnoreItem = NULL) const;
@@ -282,7 +284,7 @@ public:
 	//~IInventory
 
 	int GetAccessorySlotIndex(IEntityClass* accessoryClass) const;
-	void IgnoreNextClear() { m_ignoreNextClear = true; }
+	virtual void IgnoreNextClear() { m_ignoreNextClear = true; }
 
 	virtual void GetMemoryUsage(ICrySizer * s) const	
 	{

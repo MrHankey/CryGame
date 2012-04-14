@@ -19,13 +19,16 @@
 #include "Actor.h"
 #include "GameRules.h"
 
-SUIEventHelper<CUIMultiPlayer> CUIMultiPlayer::s_EventDispatcher;
-
 ////////////////////////////////////////////////////////////////////////////
 CUIMultiPlayer::CUIMultiPlayer()
 	: m_pUIEvents(NULL)
 	, m_pUIFunctions(NULL)
 	, m_LocalPlayerName("Dude")
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+void CUIMultiPlayer::InitEventSystem()
 {
 	if (!gEnv->pFlashUI)
 		return;
@@ -37,95 +40,93 @@ CUIMultiPlayer::CUIMultiPlayer()
 
 	// events to send from this class to UI flowgraphs
 	m_pUIFunctions = gEnv->pFlashUI->CreateEventSystem("MP", IUIEventSystem::eEST_SYSTEM_TO_UI);
+	m_eventSender.Init(m_pUIFunctions);
+
 	{
-		SUIEventDesc evtDesc("EnteredGame", "EnteredGame", "Triggered once the local player enters the game");
-		m_EventMap[eUIE_EnteredGame] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("EnteredGame", "Triggered once the local player enters the game");
+		m_eventSender.RegisterEvent<eUIE_EnteredGame>(evtDesc);
 	}
 
 	{
-		SUIEventDesc evtDesc("PlayerJoined", "PlayerJoined", "Triggered if a player joins the game");
-		evtDesc.Params.push_back(SUIParameterDesc("ID", "ID", "", SUIParameterDesc::eUIPT_Int));
-		evtDesc.Params.push_back(SUIParameterDesc("Name", "Name", "", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_PlayerJoined] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("PlayerJoined", "Triggered if a player joins the game");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ID", "ID of player");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Name of the player");
+		m_eventSender.RegisterEvent<eUIE_PlayerJoined>(evtDesc);
 	}
 
 	{
-		SUIEventDesc evtDesc("PlayerLeft", "PlayerLeft", "Triggered if a player left the game");
-		evtDesc.Params.push_back(SUIParameterDesc("ID", "ID", "", SUIParameterDesc::eUIPT_Int));
-		evtDesc.Params.push_back(SUIParameterDesc("Name", "Name", "", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_PlayerLeft] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("PlayerLeft", "Triggered if a player left the game");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ID", "ID of player");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Name of the player");
+		m_eventSender.RegisterEvent<eUIE_PlayerLeft>(evtDesc);
 	}
 
 	{
-		SUIEventDesc evtDesc("PlayerKilled", "PlayerKilled", "Triggered if a player gets killed");
-		evtDesc.Params.push_back(SUIParameterDesc("ID", "ID", "", SUIParameterDesc::eUIPT_Int));
-		evtDesc.Params.push_back(SUIParameterDesc("Name", "Name", "", SUIParameterDesc::eUIPT_String));
-		evtDesc.Params.push_back(SUIParameterDesc("ShooterID", "ShooterID", "", SUIParameterDesc::eUIPT_Int));
-		evtDesc.Params.push_back(SUIParameterDesc("ShooterName", "ShooterName", "", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_PlayerKilled] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("PlayerKilled", "Triggered if a player gets killed");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ID", "ID of player");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Name of the player");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ShooterID", "ID of the shooter");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("ShooterName", "Name of the shooter");
+		m_eventSender.RegisterEvent<eUIE_PlayerKilled>(evtDesc);
 	}
 
 	{
-		SUIEventDesc evtDesc("PlayerRenamed", "PlayerRenamed", "Triggered if a player was renamed");
-		evtDesc.Params.push_back(SUIParameterDesc("ID", "ID", "", SUIParameterDesc::eUIPT_Int));
-		evtDesc.Params.push_back(SUIParameterDesc("NewName", "NewName", "", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_PlayerRenamed] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("PlayerRenamed", "Triggered if a player was renamed");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_Int>("ID", "ID of player");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("NewName", "New name of the player");
+		m_eventSender.RegisterEvent<eUIE_PlayerRenamed>(evtDesc);
 	}
 
 	{
-		SUIEventDesc evtDesc("OnGetName", "OnGetName", "Triggers once the \"GetPlayerName\" node was called");
-		evtDesc.Params.push_back(SUIParameterDesc("Name", "Name", "", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_SendName] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("OnGetName", "Triggers once the \"GetPlayerName\" node was called");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Name of the local player");
+		m_eventSender.RegisterEvent<eUIE_SendName>(evtDesc);
 	}
 
 	{
-		SUIEventDesc evtDesc("OnGetServerName", "OnGetServerName", "Triggers once the \"GetLastServer\" node was called");
-		evtDesc.Params.push_back(SUIParameterDesc("Address", "Address", "", SUIParameterDesc::eUIPT_String));
-		m_EventMap[eUIE_SendServer] = m_pUIFunctions->RegisterEvent(evtDesc);
+		SUIEventDesc evtDesc("OnGetServerName", "Triggers once the \"GetLastServer\" node was called");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Address", "Last server address");
+		m_eventSender.RegisterEvent<eUIE_SendServer>(evtDesc);
 	}
 
 
 	// events that can be sent from UI flowgraphs to this class
 	m_pUIEvents = gEnv->pFlashUI->CreateEventSystem("MP", IUIEventSystem::eEST_UI_TO_SYSTEM);
+	m_eventDispatcher.Init(m_pUIEvents, this, "CUIMultiPlayer");
+
 	{
-		SUIEventDesc evtDesc("GetPlayers", "GetPlayers", "");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, evtDesc, &CUIMultiPlayer::RequestPlayers);
+		SUIEventDesc evtDesc("GetPlayers", "Request all players (will trigger the \"PlayerJoined\" node for each player)");
+		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::RequestPlayers);
 	}
 
 	{
-		SUIEventDesc evtDesc("GetPlayerName", "GetPlayerName", "Get the name of the local player in mp (will trigger the \"OnGetName\" node");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, evtDesc, &CUIMultiPlayer::GetPlayerName);
+		SUIEventDesc evtDesc("GetPlayerName", "Get the name of the local player in mp (will trigger the \"OnGetName\" node)");
+		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::GetPlayerName);
 	}
 
 	{
-		SUIEventDesc evtDesc("SetPlayerName", "SetPlayerName", "Set the name of the local player in mp");
-		evtDesc.Params.push_back(SUIParameterDesc("Name", "Name", "Local player name", SUIParameterDesc::eUIPT_String));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, evtDesc, &CUIMultiPlayer::SetPlayerName);
+		SUIEventDesc evtDesc("SetPlayerName", "Set the name of the local player in mp");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Local player name");
+		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::SetPlayerName);
 	}
 
 	{
-		SUIEventDesc evtDesc("ConnectToServer", "ConnectToServer", "Connect to a server");
-		evtDesc.Params.push_back(SUIParameterDesc("Address", "Address", "server address", SUIParameterDesc::eUIPT_String));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, evtDesc, &CUIMultiPlayer::ConnectToServer);
+		SUIEventDesc evtDesc("ConnectToServer", "Connect to a server");
+		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Address", "server address");
+		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::ConnectToServer);
 	}
 
 	{
-		SUIEventDesc evtDesc("GetLastServer", "GetLastServer", "Get the server name that was last used");
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, evtDesc, &CUIMultiPlayer::GetServerName);
+		SUIEventDesc evtDesc("GetLastServer", "Get the server name that was last used");
+		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::GetServerName);
 	}
-
-
-	m_pUIEvents->RegisterListener(this, "CUIMultiPlayer");
 
 	gEnv->pFlashUI->RegisterModule(this, "CUIMultiPlayer");
 }
 
 ////////////////////////////////////////////////////////////////////////////
-CUIMultiPlayer::~CUIMultiPlayer()
+void CUIMultiPlayer::UnloadEventSystem()
 {
-	if (m_pUIEvents)
-		m_pUIEvents->UnregisterListener(this);
-
 	if (gEnv->pFlashUI)
 		gEnv->pFlashUI->UnregisterModule(this);
 }
@@ -142,7 +143,7 @@ void CUIMultiPlayer::Reset()
 // ui functions
 void CUIMultiPlayer::EnteredGame()
 {
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_EnteredGame], SUIArguments()));
+	m_eventSender.SendEvent<eUIE_EnteredGame>();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -158,11 +159,7 @@ void CUIMultiPlayer::PlayerJoined(EntityId playerid, const string& name)
 		return;
 	}
 
-	SUIArguments args;
-	args.AddArgument(playerid);
-	args.AddArgument(name);
-
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_PlayerJoined], args));
+	m_eventSender.SendEvent<eUIE_PlayerJoined>(playerid, name);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -185,26 +182,16 @@ void CUIMultiPlayer::PlayerLeft(EntityId playerid, const string& name)
 		}
 	}
 
-	SUIArguments args;
-	args.AddArgument(playerid);
-	args.AddArgument(name);
-
 	const bool ok = stl::member_find_and_erase(m_Players, playerid);
  	assert( ok );
 
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_PlayerLeft], args));
+	m_eventSender.SendEvent<eUIE_PlayerLeft>(playerid, name);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 void CUIMultiPlayer::PlayerKilled(EntityId playerid, EntityId shooterid)
 {
-	SUIArguments args;
-	args.AddArgument(playerid);
-	args.AddArgument(GetPlayerNameById(playerid));
-	args.AddArgument(shooterid);
-	args.AddArgument(GetPlayerNameById(shooterid));
-
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_PlayerKilled], args));
+	m_eventSender.SendEvent<eUIE_PlayerKilled>(playerid, GetPlayerNameById(playerid), shooterid, GetPlayerNameById(shooterid));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -214,25 +201,13 @@ void CUIMultiPlayer::PlayerRenamed(EntityId playerid, const string& newName)
 
 	m_Players[playerid].name = newName;
 
-	SUIArguments args;
-	args.AddArgument(playerid);
-	args.AddArgument(newName);
-
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_PlayerRenamed], args));
+	m_eventSender.SendEvent<eUIE_PlayerRenamed>(playerid, newName);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-// ui events
-void CUIMultiPlayer::OnEvent( const SUIEvent& event )
-{
-	s_EventDispatcher.Dispatch( this, event );
-}
-
-////////////////////////////////////////////////////////////////////////////
-//
-void CUIMultiPlayer::RequestPlayers( const SUIEvent& event )
+void CUIMultiPlayer::RequestPlayers()
 {
 	IActorIteratorPtr actors = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->CreateActorIterator();
 	while (IActor* pActor = actors->Next())
@@ -245,45 +220,31 @@ void CUIMultiPlayer::RequestPlayers( const SUIEvent& event )
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUIMultiPlayer::GetPlayerName( const SUIEvent& event )
+void CUIMultiPlayer::GetPlayerName()
 {
-	SUIArguments args;
-	args.AddArgument(m_LocalPlayerName);
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_SendName], args));
+	m_eventSender.SendEvent<eUIE_SendName>(m_LocalPlayerName);
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Arg1: Name
-//
-void CUIMultiPlayer::SetPlayerName( const SUIEvent& event )
+void CUIMultiPlayer::SetPlayerName( const string& newname )
 {
-	event.args.GetArg(0, m_LocalPlayerName);
+	m_LocalPlayerName = newname;
 	SubmitNewName();
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Arg1: Server address
-//
-void CUIMultiPlayer::ConnectToServer( const SUIEvent& event )
+void CUIMultiPlayer::ConnectToServer( const string& server )
 {
 	if (gEnv->IsEditor()) return;
 
-	string address;
-	if (event.args.GetArg(0, address))
-	{
-		m_ServerName = address;
-		g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(string().Format("connect %s", address.c_str()));
-	}
+	m_ServerName = server;
+	g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(string().Format("connect %s", server.c_str()));
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//
-void CUIMultiPlayer::GetServerName( const SUIEvent& event )
+void CUIMultiPlayer::GetServerName()
 {
-	SUIArguments args;
-	args.AddArgument(m_ServerName);
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_SendServer], args));
+	m_eventSender.SendEvent<eUIE_SendServer>(m_ServerName);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -329,8 +290,11 @@ void CUIMultiPlayer::LoadProfile(IPlayerProfile* pProfile)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void CUIMultiPlayer::SaveProfile(IPlayerProfile* pProfile)
+void CUIMultiPlayer::SaveProfile(IPlayerProfile* pProfile) const
 {
 	pProfile->SetAttribute( "mp_username", m_LocalPlayerName);
 	pProfile->SetAttribute( "mp_server",  m_ServerName);
 }
+
+////////////////////////////////////////////////////////////////////////////
+REGISTER_UI_EVENTSYSTEM( CUIMultiPlayer );

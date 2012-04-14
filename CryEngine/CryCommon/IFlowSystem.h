@@ -11,7 +11,7 @@
 #define _UICONFIG(x) x
 
 struct IFlowGraphModuleManager;
-struct IFlowgraphDebugger;
+struct IFlowGraphDebugger;
 
 typedef uint8 TFlowPortId;
 typedef uint16 TFlowNodeId;
@@ -1030,7 +1030,7 @@ UNIQUE_IFACE struct IFlowSystem
 	virtual IFlowGraphModuleManager* GetIModuleManager() = 0;
 
 	//Gets the flowgraph debugger
-	virtual IFlowgraphDebugger* GetIDebugger() = 0;
+	virtual IFlowGraphDebugger* GetIDebugger() = 0;
 };
 
 #endif

@@ -8,7 +8,7 @@ Description: Camera code dealing with obstacle avoidance.
 
 -------------------------------------------------------------------------
 History:
-- 12:2008 : Created By Jan Müller
+- 12:2008 : Created By Jan Mueller
 
 *************************************************************************/
 
@@ -127,7 +127,7 @@ bool CCameraTracking::Update(SViewParams &viewParams, float &fHOffObstacleStreng
 			//set new yaw
 			float newYaw = m_curCamOrientation.m_fYaw + m_fYawDelta;
 			//re-align yaw
-			//the camera direction is 90° off and flipped compared to entity space
+			//the camera direction is 90 degrees off and flipped compared to entity space
 			newYaw = (newYaw - gf_PI * 0.5f) * -1.0f;
 			//set new pitch
 			float newPitch = m_curCamOrientation.m_fPitch + m_fPitchDelta;

@@ -110,11 +110,13 @@ const CryLobbyConnectionID CryLobbyInvalidConnectionID = 0xffffffff;
 typedef uint16 CryPing;
 #define CRYLOBBY_INVALID_PING		(CryPing(~0))
 
+#define CRYSESSIONID_STRINGLEN 48
 struct SCrySessionID : public CMultiThreadRefCount
 {
 	virtual bool operator == (const SCrySessionID &other) = 0;
 	virtual bool operator < (const SCrySessionID &other)  = 0;
 	virtual bool IsFromInvite() const = 0;
+	virtual void AsCStr( char* pOutString, int inBufferSize ) const = 0;
 };
 
 typedef _smart_ptr<SCrySessionID>	CrySessionID;

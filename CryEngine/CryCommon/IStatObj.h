@@ -196,7 +196,7 @@ UNIQUE_IFACE struct IStatObj : public IStreamable
 		ELoadingFlagsPreviewMode		=BIT(0),
 		ELoadingFlagsForceBreakable =BIT(1),
 		ELoadingFlagsIgnoreLoDs			=BIT(2),
-		ELoadingFlagsTesselate			=BIT(3), // if e_StatObjTesselation enabled
+		ELoadingFlagsTessellate			=BIT(3), // if e_StatObjTessellation enabled
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -466,7 +466,8 @@ UNIQUE_IFACE struct IStatObj : public IStreamable
 	//     Get the LOD object
 	virtual IStatObj* GetLodObject( int nLodLevel,bool bReturnNearest=false )=0;
   virtual IStatObj* GetLowestLod( )=0;
-	virtual int FindNearesLoadedLOD(int nLodIn, const SRendParams & rParams)=0;
+	virtual int FindNearesLoadedLOD(int nLodIn, bool bSearchUp=false)=0;
+	virtual int FindHighestLOD(int nBias)=0;
 
 	// Summary:
 	//     Returns the filename of the object

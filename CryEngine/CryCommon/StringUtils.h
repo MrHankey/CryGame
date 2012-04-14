@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Crytek Character Animation source code
 //	
@@ -18,6 +18,7 @@
 #include <ISystem.h>        // CryLog()
 #include <algorithm>        // std::replace
 #include <time.h>
+#include <crc32.h>
 
 #if defined(LINUX)
 	#include <ctype.h>
@@ -503,45 +504,23 @@ inline bool MatchWildcardIgnoreCase(const char* szString, const char* szWildcard
 	return *szWildcard == 0;
 }
 
+// returns the Crc32Gen per module
+inline Crc32Gen* GetCrc32Gen()
+{
+	static Crc32Gen generator;
+	return &generator;
+}
 
 // calculates a hash value for a given string
 inline uint32 CalculateHash(const char *str)
 {
-	static uint32 lenStr = 0;
-	static uint32 hash = 0;  // seed
-	static uint32 step = 0;  // if string is too long, don't hash all its chars
-	static uint32 iStr;
-
-	//init
-	lenStr = strlen(str);
-	hash = lenStr;
-	step = (lenStr>>5)+1;
-
-	//compute hash
-	for (iStr=lenStr; iStr>=step; iStr-=step)
-		hash = hash ^ ((hash<<5)+(hash>>2)+(unsigned char)(str[iStr-1]));
-
-	return hash;
+	return GetCrc32Gen()->GetCRC32(str);
 }
 
 // calculates a hash value for the lower case version of a given string
 inline uint32 CalculateHashLowerCase(const char *str)
 {
-	static uint32 lenStr = 0;
-	static uint32 hash = 0;  // seed
-	static uint32 step = 0;  // if string is too long, don't hash all its chars
-	static uint32 iStr;
-
-	//init
-	lenStr = strlen(str);
-	hash = lenStr;
-	step = (lenStr>>5)+1;
-
-	//compute hash
-	for (iStr=lenStr; iStr>=step; iStr-=step)
-		hash = hash ^ ((hash<<5)+(hash>>2)+(unsigned char)(__ascii_tolower(str[iStr-1])));
-
-	return hash;
+	return GetCrc32Gen()->GetCRC32Lowercase(str);
 }
 
 // converts all chars to lower case - avoids memory allocation

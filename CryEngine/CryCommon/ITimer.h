@@ -8,7 +8,11 @@
 #include "TimeValue.h"				// CTimeValue
 #include "SerializeFwd.h"
 
+// All platforms must define CryGetTicks(), returning real-time high-resolution tick count
+typedef int64 tick_t;
+
 struct tm;
+
 // Summary:
 // Interface to the Timer System.
 struct ITimer
@@ -129,18 +133,46 @@ struct ITimer
 	//	 Like timegm, but not available on all platforms.
 	virtual time_t DateToSecondsUTC(struct tm& timePtr) = 0;
 
+	//
+	// For convenience, provide inline interface to high-resolution tick timer.
+	//
 
 	// Summary 
-	//	Convert from ticks (QueryPerformanceCounter) to milliseconds
+	//	Return current real-time high-resolution tick count.
 	//
-	virtual float TicksToMillis(int64 ticks) = 0;
+	static inline tick_t GetTicks()
+	{
+		return CryGetTicks();
+	}
 
 	// Summary 
-	//	Convert from ticks (QueryPerformanceCounter) to nanoseconds
-	//  useable by CTimeValue.SetValue()
+	//	Return current tick count minus any fiber yeild time.
 	//
-	virtual int64 TicksToNanos(int64 ticks) = 0;
-	
+	static inline tick_t GetNonFiberTicks()
+	{
+#if EMBED_PHYSICS_AS_FIBER
+		return CryGetTicks() - JobManager::Fiber::FiberYieldTime(); 
+#else
+		return CryGetTicks();
+#endif
+	}
+
+	// Summary 
+	//	Return number of ticks (CryGetTicks()) per second.
+	//
+	inline tick_t GetTicksPerSecond() const
+	{
+		return m_lTicksPerSec;
+	}
+
+	// Summary 
+	//	Convert from ticks (CryGetTicks()) to seconds
+	//
+	inline float TicksToSeconds(tick_t ticks) const
+	{
+		return float( double(ticks) * m_fSecsPerTick );
+	}
+
 	// Summary 
 	//	Create a new timer of the same type
 	//
@@ -148,6 +180,8 @@ struct ITimer
 
 protected:
 	CTimeValue			m_CurrTime[ETIMER_LAST+1];  // absolute time at UpdateOnFrameStart()
+	tick_t					m_lTicksPerSec;
+	double					m_fSecsPerTick;
 };
 
 // Description:

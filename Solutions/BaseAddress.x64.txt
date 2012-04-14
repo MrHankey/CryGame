@@ -19,3 +19,6 @@ GameDll				0x39000000		; Use "GameDll" to avoid having to specify it per-project
 DedicatedLauncher	0x37000000
 launcher			0x37000000
 Editor				0x37000000
+PlugMoz				0x37000000
+BrowserLauncher			0x37500000
+

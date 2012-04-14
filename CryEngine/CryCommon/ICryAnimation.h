@@ -1307,12 +1307,7 @@ class CAnimationLightProfileSection
 {
 public:
 	CAnimationLightProfileSection() 
-	: m_nTicks( CryGetTicks() )
-#   if EMBED_PHYSICS_AS_FIBER
-		, m_nYields(JobManager::Fiber::FiberYieldTime())
-#   else 
-		, m_nYields()
-#   endif 
+	: m_nTicks( ITimer::GetNonFiberTicks() )
 	{
 #ifdef SNTUNER
 		snPushMarker("Animation");
@@ -1322,14 +1317,9 @@ public:
 	~CAnimationLightProfileSection() 
 	{ 
 		ICharacterManager *pCharacterManager = gEnv->pCharacterManager;
-#   if EMBED_PHYSICS_AS_FIBER
-		uint64 nYields = JobManager::Fiber::FiberYieldTime(); 
-#   else 
-		uint64 nYields = 0ULL; 
-#   endif 
 		IF( pCharacterManager != NULL, 1)
 		{
-			pCharacterManager->AddFrameTicks((CryGetTicks()-m_nTicks)-(nYields-m_nYields));
+			pCharacterManager->AddFrameTicks(ITimer::GetNonFiberTicks()-m_nTicks);
 		}
 #ifdef SNTUNER
 		snPopMarker();
@@ -1337,7 +1327,6 @@ public:
 	}
 private:
 	uint64 m_nTicks;
-	uint64 m_nYields;
 };
 
 
@@ -1345,29 +1334,18 @@ class CAnimationLightSyncProfileSection
 {
 public:
 	CAnimationLightSyncProfileSection() 
-		: m_nTicks( CryGetTicks() ) 
-#   if EMBED_PHYSICS_AS_FIBER
-		, m_nYields(JobManager::Fiber::FiberYieldTime())
-#   else 
-		, m_nYields()
-#   endif 
+		: m_nTicks( ITimer::GetNonFiberTicks() ) 
 	{}
 	~CAnimationLightSyncProfileSection() 
 	{ 
 		ICharacterManager *pCharacterManager = gEnv->pCharacterManager;
-#   if EMBED_PHYSICS_AS_FIBER
-		uint64 nYields = JobManager::Fiber::FiberYieldTime(); 
-#   else 
-		uint64 nYields = 0ULL; 
-#   endif 
 		IF( pCharacterManager != NULL, 1)
 		{
-			pCharacterManager->AddFrameSyncTicks((CryGetTicks()-m_nTicks)-(nYields-m_nYields));
+			pCharacterManager->AddFrameSyncTicks(ITimer::GetNonFiberTicks()-m_nTicks);
 		}
 	}
 private:
 	uint64 m_nTicks;
-	uint64 m_nYields; 
 };
 
 #define ANIMATION_LIGHT_PROFILER() CAnimationLightProfileSection _animationLightProfileSection;

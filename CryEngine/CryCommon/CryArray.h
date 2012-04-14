@@ -831,12 +831,6 @@ struct StaticDynArray: DynArray< T, I, NArray::FixedDynStorage< NArray::StaticAr
 {
 };
 
-// Alias for legacy array class.
-template<class T, int nSIZE>
-struct CryFixedArray: StaticDynArray<T, nSIZE, size_t>
-{
-};
-
 /*---------------------------------------------------------------------------
 // ALLOC prototype for ArrayStorage.
 

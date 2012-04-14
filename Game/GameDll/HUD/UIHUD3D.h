@@ -14,22 +14,26 @@
 #ifndef __UIHUD3D_H__
 #define __UIHUD3D_H__
 
+#include "IUIGameEventSystem.h"
 #include <IFlashUI.h>
-#include <IViewSystem.h>
 
 class CUIHUD3D
-	: public ISystemEventListener
+	: public IUIGameEventSystem
+	, public ISystemEventListener
 	, public IUIModule
 {
 public:
 	CUIHUD3D();
-	~CUIHUD3D();
+
+	// IUIGameEventSystem
+	UIEVENTSYSTEM( "UIHUD3D" );
+	virtual void InitEventSystem();
+	virtual void UnloadEventSystem();
+	virtual void UpdateView( const SViewParams &viewParams );
 
 	// ISystemEventListener
 	virtual void OnSystemEvent( ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam );
 	// ~ISystemEventListener
-
-	void UpdateView(const SViewParams &viewParams);
 
 	// IUIModule
 	void Reload();

@@ -28,6 +28,7 @@
 #include <CryPath.h>
 #include <ISound.h>
 #include "Flock.h"
+#include <IBreakableManager.h>
 
 #define BIRDS_PHYSICS_DENSITY 200
 #define BIRDS_PHYSICS_INWATER_DENSITY 900

@@ -14,19 +14,21 @@
 #ifndef __UIMenuEvents_H__
 #define __UIMenuEvents_H__
 
+#include "IUIGameEventSystem.h"
 #include <IFlashUI.h>
 #include <IGameFramework.h>
 
 class CUIMenuEvents
-	: public IUIEventListener
+	: public IUIGameEventSystem
 	, public IUIModule
 {
 public:
 	CUIMenuEvents();
-	~CUIMenuEvents();
 
-	// IUIEventListener
-	virtual void OnEvent( const SUIEvent& event );
+	// IUIGameEventSystem
+	UIEVENTSYSTEM( "UIMenuEvents" );
+	virtual void InitEventSystem();
+	virtual void UnloadEventSystem();
 
 	//IUIModule
 	virtual void Reset();
@@ -34,25 +36,21 @@ public:
 	void DisplayIngameMenu(bool bDisplay);
 	bool IsIngameMenuStarted() const { return m_bIsIngameMenuStarted; }
 
-
 private:
 	void StartIngameMenu();
 	void StopIngameMenu();
 
-	void OnDisplayIngameMenu( const SUIEvent& event );
-
 private:
-	static SUIEventHelper<CUIMenuEvents> s_EventDispatcher;
-	IUIEventSystem* m_pUIEvents;
-	IUIEventSystem* m_pUIFunctions;
-
 	enum EUIEvent
 	{
 		eUIE_StartIngameMenu,
 		eUIE_StopIngameMenu,
 	};
 
-	std::map< EUIEvent, uint > m_EventMap;
+	SUIEventReceiverDispatcher<CUIMenuEvents> m_eventDispatcher;
+	SUIEventSenderDispatcher<EUIEvent> m_eventSender;
+	IUIEventSystem* m_pUIEvents;
+	IUIEventSystem* m_pUIFunctions;
 
 	bool m_bIsIngameMenuStarted;
 };

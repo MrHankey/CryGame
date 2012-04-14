@@ -1334,7 +1334,7 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		pseudoSpeed = 0.4f;
 	m_pPlayer->GetAnimationGraphState()->SetInput(m_inputPseudoSpeed, pseudoSpeed);
 
-	bool hasPrediction = m_state.HasPrediction() && (m_state.GetPrediction().nStates > 0);
+	bool hasPrediction = m_state.HasPrediction() && (m_state.GetPrediction().IsValid());
 	bool hasAnimTarget = (pAnimTarget != NULL) && (pAnimTarget->activated || pAnimTarget->preparing);
 	if (hasPrediction && !hasAnimTarget)
 	{
@@ -1342,8 +1342,8 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	}
 	else
 	{
-    params.prediction.nStates = 0;
-	 }
+		params.prediction.Reset();
+	}
 
 /*
 #ifdef USER_dejan

@@ -457,109 +457,66 @@ struct SAnimationTarget
 };
 
 //TODO: find a better place for this!!!
-struct SPredictedCharacterState
-{
-	Vec3 position; // Position in world space coordinates.
-	Quat orientation; // Orientation in world space coordinates.
+#define MAX_PREDICTION_PARAMS 6
 
-	Vec3 velocity; // Linear velocity in world space coordinates.
-
-	float deltatime; // Relative time of prediction.
-};
 struct SPredictedCharacterStates
 {
-#ifdef GAME_IS_CRYSIS2
-	static const size_t maxStates = 2;
-#else  //!GAME_IS_CRYSIS2
-	static const size_t maxStates = 10;
-#endif //!GAME_IS_CRYSIS2
-	SPredictedCharacterState states[maxStates];
-	int nStates;
-	SPredictedCharacterStates() 
-		: nStates(0)
-	{}
-	SPredictedCharacterStates(const SPredictedCharacterStates& src) 
-	{ 
-		Copy(src);
-	}
-	SPredictedCharacterStates& operator=(const SPredictedCharacterStates& src) 
-	{ 
-		Copy(src);
+public:
+	SPredictedCharacterStates() : m_numParams(0) {}
 
-		return *this; 
-	}
+	bool IsSet() const { return m_numParams > 0; }
 
-	ILINE void Copy(const SPredictedCharacterStates& src)
+	void Reset() { m_numParams = 0; }
+
+	bool SetParam(EMotionParamID motionParameterID, float value)
 	{
-		const int numStates = src.nStates;
-		nStates = numStates;
-		for (int i=0; i<numStates; ++i)
+		int index = 0;
+		while((index < m_numParams) && (m_motionParameterID[index] != motionParameterID))
+			++index;
+
+		if (index == m_numParams)
 		{
-			states[i].position		= src.states[i].position;
-			states[i].orientation = src.states[i].orientation;
-			states[i].velocity		= src.states[i].velocity;
-			states[i].deltatime		= src.states[i].deltatime;
+			if (index == MAX_PREDICTION_PARAMS)
+				return false;
+
+			++m_numParams;
 		}
+
+		m_motionParameter[index] = value;
+		m_motionParameterID[index] = motionParameterID;
+
+		return true;
+	}
+
+	bool GetParam(EMotionParamID motionParameterID, float& value) const
+	{
+		for(int index = 0; index < m_numParams; ++index)
+		{
+			if (m_motionParameterID[index] == motionParameterID)
+			{
+				value = m_motionParameter[index];
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	bool IsValid() const
 	{
-		for (int i = 0; i < nStates; ++i)
+		bool isValid = true;
+		for(int index = 0; index < m_numParams; ++index)
 		{
-			if (!states[i].position.IsValid())
-				return false;
-			if (!states[i].orientation.IsValid())
-				return false;
-			if (!states[i].velocity.IsValid())
-				return false;
-			if (!NumberValid(states[i].deltatime))
-				return false;
-		}
-		return true;
-	}
-
-	ILINE float GetMaxDeltaTime() const
-	{
-		CRY_ASSERT_TRACE(nStates > 0 && nStates <= maxStates, ("nStates=%d out of valid range (1 to %d)", nStates, maxStates));
-		return states[nStates-1].deltatime;
-	}
-
-	ILINE SPredictedCharacterState GetFirstState() const
-	{
-		CRY_ASSERT(nStates > 0);
-		return states[0];
-	}
-
-	ILINE SPredictedCharacterState GetInterpolatedState(float deltatime) const
-	{
-		CRY_ASSERT_TRACE(nStates > 0 && nStates <= maxStates, ("nStates=%d out of valid range (1 to %d)", nStates, maxStates));
-
-		if (nStates == 1)
-			return states[0];
-
-		if (deltatime <= 0.0f)
-			return states[0];
-
-		if (deltatime >= GetMaxDeltaTime())
-			return states[nStates-1];
-
-		int i = 0;
-		CRY_ASSERT((i + 1) < maxStates);
-		while (deltatime > states[i+1].deltatime) 
-		{
-			i++;
-			CRY_ASSERT((i + 1) < maxStates);
+			isValid = isValid && NumberValid(m_motionParameter[index]);
 		}
 
-		float fraction = (deltatime - states[i].deltatime) / (states[i+1].deltatime - states[i].deltatime);
-		SPredictedCharacterState state;
-		state.position = LERP(states[i].position, states[i+1].position, fraction);
-		state.orientation.SetNlerp(states[i].orientation, states[i+1].orientation, fraction); /*state.orientation.Normalize();*/
-		state.velocity = LERP(states[i].velocity, states[i+1].velocity, fraction);
-		state.deltatime = deltatime;
-		return state;
+		return isValid;
 	}
 
+private:
+	f32    m_motionParameter[MAX_PREDICTION_PARAMS];
+	uint8  m_motionParameterID[MAX_PREDICTION_PARAMS];
+	uint8  m_numParams;
 };
 
 typedef uint32 TAnimationGraphQueryID;
@@ -584,8 +541,6 @@ UNIQUE_IFACE struct IAnimationGraphExistanceQuery : public IAnimationGraphAuxill
 {
 	/// Execute the query.
 	virtual bool Complete() = 0;
-	/// Returns animation length after query is Complete() and successful. Otherwise returns CTimeValue(0).
-	virtual CTimeValue GetAnimationLength() const = 0;
 	virtual void Reset() = 0;
 	virtual void Release() = 0;
 };

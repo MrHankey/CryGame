@@ -21,7 +21,7 @@ CScriptBind_HitDeathReactions::CScriptBind_HitDeathReactions(ISystem* pSystem, I
 #undef SCRIPT_REG_CLASSNAME
 #define SCRIPT_REG_CLASSNAME &CScriptBind_HitDeathReactions::
 
-	SCRIPT_REG_TEMPLFUNC(OnHit, "scriptHitInfo");
+	SCRIPT_REG_TEMPLFUNC(OnHit, "scriptHitInfo, fCausedDamage");
 	SCRIPT_REG_TEMPLFUNC(ExecuteHitReaction, "reactionParams");
 	SCRIPT_REG_TEMPLFUNC(ExecuteDeathReaction, "reactionParams");
 	SCRIPT_REG_FUNC(EndCurrentReaction);
@@ -40,7 +40,7 @@ CScriptBind_HitDeathReactions::~CScriptBind_HitDeathReactions()
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-int	CScriptBind_HitDeathReactions::OnHit(IFunctionHandler *pH, SmartScriptTable scriptHitInfo)
+int	CScriptBind_HitDeathReactions::OnHit(IFunctionHandler *pH, SmartScriptTable scriptHitInfo, float fCausedDamage)
 {
 	bool bRet = false;
 
@@ -50,9 +50,9 @@ int	CScriptBind_HitDeathReactions::OnHit(IFunctionHandler *pH, SmartScriptTable 
 		HitInfo hitInfo;
 		CGameRules::CreateHitInfoFromScript(scriptHitInfo, hitInfo);
 
-		bRet = pHitDeathReactions->OnHit(hitInfo);
+		bRet = pHitDeathReactions->OnHit(hitInfo, fCausedDamage);
 	}
-	
+
 	return pH->EndFunction(bRet);
 }
 

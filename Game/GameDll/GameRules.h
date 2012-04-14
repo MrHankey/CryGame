@@ -8,7 +8,7 @@
 
 	-------------------------------------------------------------------------
 	History:
-	- 7:2:2006   15:38 : Created by Márcio Martins
+	- 7:2:2006   15:38 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __GAMERULES_H__
@@ -224,6 +224,10 @@ public:
 	virtual void ClearAllMigratingPlayers(void);
 	virtual EntityId SetChannelForMigratingPlayer(const char* name, uint16 channelID);
 	virtual void StoreMigratingPlayer(IActor* pActor);
+
+	// Summary
+	// Determines if a projectile spawned by the client is hitting a friendly AI
+	virtual bool IsClientFriendlyProjectile(const EntityId projectileId, const EntityId targetEntityId) ;
 	virtual bool IsTimeLimited() const;
 
 	virtual void ResetRoundTime();
@@ -1215,5 +1219,13 @@ protected:
 
 	CCinematicInput			m_cinematicInput;
 };
+
+#define NOTIFY_UI_MP( fct ) { \
+	CUIMultiPlayer* pUIEvt = UIEvents::Get<CUIMultiPlayer>(); \
+	if (pUIEvt) pUIEvt->fct; } \
+
+#define NOTIFY_UI_OBJECTIVES( fct ) { \
+	CUIObjectives* pUIEvt = UIEvents::Get<CUIObjectives>(); \
+	if (pUIEvt) pUIEvt->fct; } \
 
 #endif //__GAMERULES_H__

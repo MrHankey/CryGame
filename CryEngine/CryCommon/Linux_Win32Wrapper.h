@@ -294,8 +294,13 @@ static void DeleteCriticalSection(CRITICAL_SECTION *lpCriticalSection){}
 extern bool QueryPerformanceCounter(LARGE_INTEGER *counter);
 extern bool QueryPerformanceFrequency(LARGE_INTEGER *frequency);
 
-#define GetTickCount CryGetTicks
-#define GetCurrentTime CryGetTicks
+inline uint32 GetTickCount()
+{
+	LARGE_INTEGER count, freq;
+	QueryPerformanceCount(&count);
+	QueryPerformanceFrequency(&freq);
+	return uint32(count.QuadPart * 1000 / freq.QuadPart);
+}
 
 #define IGNORE              0       // Ignore signal
 #define INFINITE            0xFFFFFFFF  // Infinite timeout

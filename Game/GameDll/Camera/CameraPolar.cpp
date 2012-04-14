@@ -8,7 +8,7 @@ Description: Camera polar coordinates, the basis of the camera coordinate system
 
 -------------------------------------------------------------------------
 History:
-- 01:2009 : Created By Jan Müller
+- 01:2009 : Created By Jan Mueller
 
 *************************************************************************/
 

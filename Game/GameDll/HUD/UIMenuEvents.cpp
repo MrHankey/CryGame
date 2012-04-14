@@ -17,46 +17,49 @@
 #include "Game.h"
 #include <ILevelSystem.h>
 
-SUIEventHelper<CUIMenuEvents> CUIMenuEvents::s_EventDispatcher;
-
 ////////////////////////////////////////////////////////////////////////////
 CUIMenuEvents::CUIMenuEvents()
 : m_pUIEvents(NULL)
 , m_pUIFunctions(NULL)
 , m_bIsIngameMenuStarted(false)
 {
+}
+
+////////////////////////////////////////////////////////////////////////////
+void CUIMenuEvents::InitEventSystem()
+{
 	if (!gEnv->pFlashUI) return;
 
 	// events to send from this class to UI flowgraphs
 	m_pUIFunctions = gEnv->pFlashUI->CreateEventSystem("MenuEvents", IUIEventSystem::eEST_SYSTEM_TO_UI);
+	m_eventSender.Init(m_pUIFunctions);
 
 	{
-		SUIEventDesc eventDesc("OnStartIngameMenu", "OnStartIngameMenu", "Triggered if the IngameMenu should be displayed");
-		m_EventMap[eUIE_StartIngameMenu] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnStartIngameMenu", "Triggered if the IngameMenu should be displayed");
+		m_eventSender.RegisterEvent<eUIE_StartIngameMenu>(eventDesc);
 	}
 
 	{
-		SUIEventDesc eventDesc("OnStopIngameMenu", "OnStopIngameMenu", "Triggered if the IngameMenu should be hidden");
-		m_EventMap[eUIE_StopIngameMenu] = m_pUIFunctions->RegisterEvent(eventDesc);
+		SUIEventDesc eventDesc("OnStopIngameMenu", "Triggered if the IngameMenu should be hidden");
+		m_eventSender.RegisterEvent<eUIE_StopIngameMenu>(eventDesc);
 	}
 
 
 	// events that can be sent from UI flowgraphs to this class
 	m_pUIEvents = gEnv->pFlashUI->CreateEventSystem("MenuEvents", IUIEventSystem::eEST_UI_TO_SYSTEM);
+	m_eventDispatcher.Init(m_pUIEvents, this, "CUIMenuEvents");
 	{
-		SUIEventDesc eventDesc("DisplayIngameMenu", "DisplayIngameMenu", "Call this to Display or Hide the IngameMenu");
-		eventDesc.Params.push_back(SUIParameterDesc("Display", "Display", "True or false", SUIParameterDesc::eUIPT_Bool));
-		s_EventDispatcher.RegisterEvent(m_pUIEvents, eventDesc, &CUIMenuEvents::OnDisplayIngameMenu);
+		SUIEventDesc eventDesc("DisplayIngameMenu", "Call this to Display or Hide the IngameMenu");
+		eventDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("Display", "True or false");
+		m_eventDispatcher.RegisterEvent(eventDesc, &CUIMenuEvents::DisplayIngameMenu);
 	}
 
-	m_pUIEvents->RegisterListener(this, "CUIMenuEvents");
 	gEnv->pFlashUI->RegisterModule(this, "CUIMenuEvents");
 }
 
 ////////////////////////////////////////////////////////////////////////////
-CUIMenuEvents::~CUIMenuEvents()
+void CUIMenuEvents::UnloadEventSystem()
 {
-	if (m_pUIEvents) m_pUIEvents->UnregisterListener(this);
 	gEnv->pFlashUI->UnregisterModule(this);
 }
 
@@ -81,24 +84,6 @@ void CUIMenuEvents::DisplayIngameMenu(bool bDisplay)
 ////////////////////////////////////////////////////////////////////////////
 // ui events
 ////////////////////////////////////////////////////////////////////////////
-void CUIMenuEvents::OnEvent( const SUIEvent& event )
-{
-	s_EventDispatcher.Dispatch( this, event );
-}
-
-////////////////////////////////////////////////////////////////////////////
-void CUIMenuEvents::OnDisplayIngameMenu( const SUIEvent& event )
-{
-	bool bDisplay;
-	if (event.args.GetArg(0, bDisplay))
-	{
-		DisplayIngameMenu(bDisplay);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
 void CUIMenuEvents::StartIngameMenu()
 {
 	if (!gEnv->bMultiplayer && !gEnv->IsEditor())
@@ -113,7 +98,7 @@ void CUIMenuEvents::StartIngameMenu()
 		pAmMgr->EnableFilter("only_ui", true);
 	}
 
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_StartIngameMenu], SUIArguments()));
+	m_eventSender.SendEvent<eUIE_StartIngameMenu>();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -130,5 +115,8 @@ void CUIMenuEvents::StopIngameMenu()
 		pAmMgr->EnableFilter("only_ui", false);
 	}
 
-	m_pUIFunctions->SendEvent(SUIEvent(m_EventMap[eUIE_StopIngameMenu], SUIArguments()));
+	m_eventSender.SendEvent<eUIE_StopIngameMenu>();
 }
+
+////////////////////////////////////////////////////////////////////////////
+REGISTER_UI_EVENTSYSTEM( CUIMenuEvents );

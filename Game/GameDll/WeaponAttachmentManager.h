@@ -28,9 +28,8 @@ class CWeaponAttachmentManager
 {
 public:
 
-	//TODO: Change to ItemStrings
-	typedef std::map<ItemString,EntityId> TBoneAttachmentMap;
-	typedef std::list<EntityId>       TAttachedWeaponsList;
+	typedef std::map<ItemString,EntityId>	TBoneAttachmentMap;
+	typedef std::list<EntityId>				TAttachedWeaponsList;
 
 	CWeaponAttachmentManager(CActor* _pOwner);
 	~CWeaponAttachmentManager();
@@ -40,6 +39,8 @@ public:
 
 	void RequestAttachWeaponToBack(EntityId weaponId) { m_itemToBack = weaponId; }
 	void RequestAttachWeaponToHand(EntityId weaponId) { m_itemToHand = weaponId; }
+
+	void RemoveAttachments();
 
 	void DoHandToBackSwitch();
 	void DoBackToHandSwitch();
@@ -54,20 +55,17 @@ protected:
 	//Create different weapon attachments
 	void CreatePlayerBoneAttachments();
 	
-	//Create c4 projected attachments
-	void CreatePlayerProjectedAttachments();
-
 private:
 	
-	CActor *m_pOwner;
+	CActor*			m_pOwner;
 	
 	TBoneAttachmentMap		m_boneAttachmentMap;
 	TAttachedWeaponsList	m_attachedWeaponList;
 
 	EntityId		m_itemToBack;
-	EntityId    m_itemToHand;
+	EntityId		m_itemToHand;
 
-	IItemSystem* m_pItemSystem;
+	IItemSystem*	m_pItemSystem;
 };
 
 #endif //__WEAPON_ATTACHMENT_MANAGER_H__

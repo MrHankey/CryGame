@@ -33,6 +33,11 @@ CUIHUD3D::CUIHUD3D()
 , m_fHudZOffset(-0.1f)
 , m_HUDRootEntityId(0)
 {
+}
+
+////////////////////////////////////////////////////////////////////////////
+void CUIHUD3D::InitEventSystem()
+{
 	assert(gEnv->pSystem);
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener( this );
@@ -52,7 +57,7 @@ CUIHUD3D::CUIHUD3D()
 }
 
 ////////////////////////////////////////////////////////////////////////////
-CUIHUD3D::~CUIHUD3D()
+void CUIHUD3D::UnloadEventSystem()
 {
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener( this );
@@ -329,9 +334,9 @@ void CUIHUD3D::OnVisCVarChange( ICVar * )
 {
 	bool bVisible = g_pGameCVars->g_showHud > 0;
 
-	CUIManager* pManager = CUIManager::GetInstance();
-	if (pManager)
-		pManager->GetHUD3D()->SetVisible( bVisible );
+	CUIHUD3D* pHud3D = UIEvents::Get<CUIHUD3D>();
+	if (pHud3D)
+		pHud3D->SetVisible( bVisible );
 
 	if (gEnv->pFlashUI)
 	{
@@ -344,3 +349,6 @@ void CUIHUD3D::OnVisCVarChange( ICVar * )
 			pHud3d->SetVisible(bVisible);
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////
+REGISTER_UI_EVENTSYSTEM( CUIHUD3D );

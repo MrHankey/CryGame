@@ -24,6 +24,7 @@ History:
 #include "SerializeFwd.h"
 #include "IAIRecorder.h"
 #include <IPhysics.h>
+#include "CryFixedArray.h"
 
 struct AgentPathfindingProperties;
 struct INavigation;
@@ -36,6 +37,7 @@ struct IAISignalExtraData;
 struct ICoordinationManager;
 struct ICommunicationManager;
 struct ICoverSystem;
+struct INavigationSystem;
 struct ISelectionTreeManager;
 struct IFunctionHandler;
 class ICentralInterestManager;
@@ -678,7 +680,7 @@ UNIQUE_IFACE struct IAISystem
 	virtual void LoadLevelData(const char * szLevel, const char * szMission) = 0;
 	virtual void LoadCover(const char * szLevel, const char * szMission) = 0;
 
-	virtual void LoadNavigationData(const char* szLevel, const char* szMission) = 0;
+	virtual void LoadNavigationData(const char* szLevel, const char* szMission, bool bAfterExporting = false) = 0;
 
 	virtual void OnMissionLoaded() = 0;
 
@@ -740,6 +742,7 @@ UNIQUE_IFACE struct IAISystem
 	virtual ITargetTrackManager* GetTargetTrackManager() const = 0;
 	virtual ISelectionTreeManager* GetSelectionTreeManager() const = 0;
 	virtual ICoverSystem* GetCoverSystem() const = 0;
+	virtual INavigationSystem* GetNavigationSystem() const = 0;
 	virtual ICommunicationManager* GetCommunicationManager() const = 0;
 	virtual IAIGroupManager const* GetGroupManager() const = 0;
 	virtual IAIGroupManager* GetGroupManager() = 0;
@@ -903,12 +906,7 @@ class CAILightProfileSection
 {
 public:
 	CAILightProfileSection() 
-		: m_nTicks( CryGetTicks() )
-#   if EMBED_PHYSICS_AS_FIBER
-		, m_nYields(JobManager::Fiber::FiberYieldTime())
-#   else 
-		, m_nYields()
-#   endif 
+		: m_nTicks( ITimer::GetNonFiberTicks() )
 	{
 		SNTunerAutoMarker::StartMarker(eTI_AI, "AI");
 	}
@@ -917,21 +915,15 @@ public:
 	NO_INLINE ~CAILightProfileSection() 
 	{ 
 		IAISystem *pAISystem = gEnv->pAISystem;
-		uint64 nTicks  = CryGetTicks();
-#   if EMBED_PHYSICS_AS_FIBER
-		uint64 nYields = JobManager::Fiber::FiberYieldTime(); 
-#   else 
-		uint64 nYields = 0ULL; 
-#   endif 
+		uint64 nTicks  = ITimer::GetNonFiberTicks();
 		IF( pAISystem != NULL, 1)
 		{
-			pAISystem->AddFrameTicks((nTicks-m_nTicks)-(nYields-m_nYields));			
+			pAISystem->AddFrameTicks(nTicks-m_nTicks);
 		}
 		SNTunerAutoMarker::StopMarker(eTI_AI);
 	}
 private:
 	uint64 m_nTicks;
-	uint64 m_nYields; 
 };
 
 #define AISYSTEM_LIGHT_PROFILER() CAILightProfileSection _aiLightProfileSection;

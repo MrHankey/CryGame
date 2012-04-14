@@ -165,15 +165,6 @@ struct SAnimationMovement
 	}
 };
 
-struct SAnimationDesc
-{
-	const SAnimationSelectionProperties* properties;
-	SAnimationMovement movement;
-	bool initialized;
-
-	SAnimationDesc() : initialized(false), properties(NULL) {}
-};
-
 struct IAnimationStateNode
 {
 	IAnimationStateNode( uint32 f = 0 ) : flags(f) {}

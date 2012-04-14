@@ -11,7 +11,7 @@
  -------------------------------------------------------------------------
   History:
   - 20:7:2004   10:34 : Created by Marco Koegler
-	- 3:8:2004		11:29 : Taken-over by Márcio Martins
+	- 3:8:2004		11:29 : Taken-over by Marcio Martins
 
 *************************************************************************/
 #include DEVIRTUALIZE_HEADER_FIX(IGameFramework.h)
@@ -376,9 +376,7 @@ enum EGameFrameworkEvent
 	eGFE_OnPostStep,
 	eGFE_OnStateChange,
 	eGFE_ResetAnimationGraphs,
-#ifndef GAME_IS_CRYSIS2
 	eGFE_OnBreakable2d,
-#endif
 	eGFE_OnBecomeVisible,
 	eGFE_PreFreeze,
 	eGFE_PreShatter,

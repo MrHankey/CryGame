@@ -7,7 +7,7 @@
   
  -------------------------------------------------------------------------
   History:
-  - 7:10:2004   14:48 : Created by Márcio Martins
+  - 7:10:2004   14:48 : Created by Marcio Martins
 												taken over by Filippo De Luca
 
 *************************************************************************/
@@ -412,7 +412,7 @@ bool CActor::Init( IGameObject * pGameObject )
 	if (!GetGameObject()->BindToNetwork())
 		return false;
 
-	GetEntity()->SetFlags(GetEntity()->GetFlags()|(ENTITY_FLAG_ON_RADAR|ENTITY_FLAG_CUSTOM_VIEWDIST_RATIO));
+	GetEntity()->SetFlags(GetEntity()->GetFlags()|(ENTITY_FLAG_ON_RADAR|ENTITY_FLAG_CUSTOM_VIEWDIST_RATIO|ENTITY_FLAG_TRIGGER_AREAS));
 
 	s_animationEventsTable.Init();
 
@@ -819,6 +819,8 @@ void CActor::RagDollize( bool fallAndPlay )
 
 		pp.type = PE_ARTICULATED;
 		pp.nSlot = 0;
+		pp.bCopyJointVelocities = true;
+
 		if(SActorStats* stats = GetActorStats())
 			pp.mass = stats->mass;
 		if(pp.mass <= 0)
@@ -2629,33 +2631,35 @@ void CActor::UpdateZeroG(float frameTime)
 
 	//CryLogAlways("next ZeroG check:%.1f",pStats->nextZeroGCheck);
 
-	Vec3 wpos(GetEntity()->GetWorldPos());
-	Vec3 checkOffset(1,1,1);
+	bool inZeroG = pStats->gravity.len2() < 0.001f;
 
-	IPhysicalEntity *pListBuf[32], **ppList = pListBuf;
-	int	numEntities = gEnv->pPhysicalWorld->GetEntitiesInBox(wpos-checkOffset,wpos+checkOffset,ppList,ent_areas|ent_allocate_list,32);
+	if (inZeroG == pStats->inZeroG)
+		return;
 
-	pStats->inZeroG = false;
-	pStats->zeroGUp.Set(0,0,0);
-
-	for (int i=0;i<numEntities;++i)
+	if (pStats->inZeroG = inZeroG)
 	{
-		pe_status_contains_point scp;
-		scp.pt = wpos;
-		
-		if (ppList[i]->GetStatus(&scp))
+		Vec3 wpos(GetEntity()->GetWorldPos());
+		Vec3 checkOffset(1,1,1);
+
+		IPhysicalEntity *pListBuf[32], **ppList = pListBuf;
+		int	numEntities = gEnv->pPhysicalWorld->GetEntitiesInBox(wpos-checkOffset,wpos+checkOffset,ppList,ent_areas|ent_allocate_list,32);
+
+		pStats->inZeroG = false;
+		pStats->zeroGUp.Set(0,0,0);
+
+		for (int i=0;i<numEntities;++i)
 		{
-			pe_params_foreign_data fd;
-			if (ppList[i]->GetParams(&fd) != 0)
+			pe_status_contains_point scp;
+			scp.pt = wpos;
+
+			if (ppList[i]->GetStatus(&scp))
 			{
-				//check for all zeroG areas to compute the average up vector for the gyroscope.
-				if (fd.iForeignData == ZEROG_AREA_ID)
+				pe_params_foreign_data fd;
+				if (ppList[i]->GetParams(&fd) != 0)
 				{
-/*
-					pe_simulation_params simpar;
-					if ((ppList[i]->GetParams(&simpar) != 0) && simpar.gravity.IsZero())
+					//check for all zeroG areas to compute the average up vector for the gyroscope.
+					if (fd.iForeignData == ZEROG_AREA_ID)
 					{
-*/
 						pe_status_pos sp;
 						if (ppList[i]->GetStatus(&sp) != 0)
 						{
@@ -2668,23 +2672,17 @@ void CActor::UpdateZeroG(float frameTime)
 
 							pStats->inZeroG = true;
 						}
-/*
 					}
-					else
-					{
-						pStats->inZeroG = false;
-					}
-*/
 				}
 			}
 		}
+
+		if (ppList!=pListBuf)
+			gEnv->pPhysicalWorld->GetPhysUtils()->DeletePointer(ppList);
+
+		if (pStats->zeroGUp.len2()<0.01f)
+			pStats->zeroGUp.Set(0,0,1);
 	}
-
-	if (ppList!=pListBuf)
-		gEnv->pPhysicalWorld->GetPhysUtils()->DeletePointer(ppList);
-
-	if (pStats->zeroGUp.len2()<0.01f)
-		pStats->zeroGUp.Set(0,0,1);
 }
 
 void CActor::ProcessBonesRotation(ICharacterInstance *pCharacter,float frameTime)

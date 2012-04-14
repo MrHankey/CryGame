@@ -7,7 +7,7 @@ $DateTime$
 Description: Camera input helper, refactored from Camera code in HeroInput
 -------------------------------------------------------------------------
 History:
-- 13:08:2008	Created by Jan Müller
+- 13:08:2008	Created by Jan Mueller
 
 *************************************************************************/
 
@@ -386,7 +386,7 @@ void CCameraInputHelper::SnapToPlayerDir()
 	SSpherical sph;
 	CartesianToSpherical(dir, sph);
 	//snap camera direction (in nav mode) to player direction
-	//the camera direction is 90° off and flipped compared to entity space
+	//the camera direction is 90 degrees off and flipped compared to entity space
 	sph.m_fYaw -= gf_PI * 0.5f;
 	sph.m_fYaw *= -1.0f;
 	SetInterpolationTarget(sph.m_fYaw, GetPitch());

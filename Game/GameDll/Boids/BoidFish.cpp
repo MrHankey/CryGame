@@ -28,6 +28,7 @@
 #include <Cry_Camera.h>
 #include <CryPath.h>
 #include <ISound.h>
+#include <IBreakableManager.h>
 
 
 #define FISH_PHYSICS_DENSITY 850

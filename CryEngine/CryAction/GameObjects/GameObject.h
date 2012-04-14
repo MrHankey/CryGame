@@ -8,7 +8,7 @@
   
  -------------------------------------------------------------------------
   History:
-  - 6:9:2004   12:44 : Created by Márcio Martins
+  - 6:9:2004   12:44 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __GAMEOBJECT_H__
@@ -210,33 +210,10 @@ public:
 	void AquireMutex();
 	void ReleaseMutex();
 
-	struct TQueuedPhysicsEvent
-	{
-		TQueuedPhysicsEvent() { ; }
-
-		TQueuedPhysicsEvent( const SGameObjectEvent& event, const EventPhysPostStep& physData )
-			:	m_eventDesc	( event )
-			,	m_physData	( physData )
-		{
-		}
-
-		// These are both POD types, so we can save them off for use at the end of the frame.
-		SGameObjectEvent	m_eventDesc;
-		EventPhysPostStep	m_physData;
-	};
-
-	void QueuePhysicsEvent( const SGameObjectEvent& event, const EventPhysPostStep& physData );
-	void ProcessQueuedPhysicsEvents();
-
 private:
 	IActionListener * m_pActionDelegate;
 	IGameObjectView * m_pViewDelegate;
 	IGameObjectProfileManager * m_pProfileManager;
-
-	// This is a thread-safe queue, so the physics thread can safely push requests while
-	// the main thread is processing the list.
-	typedef CryMT::queue< TQueuedPhysicsEvent, stl::STLGlobalAllocator<TQueuedPhysicsEvent> > TPhysicsEventQueue;
-	TPhysicsEventQueue m_physEventQueue;
 
 	uint8							m_profiles[NUM_ASPECTS];
 

@@ -375,6 +375,7 @@ ILINE f32 cry_tanf(f32 x) {return (f32)tan((f64)x);}
 ILINE f32 cry_sqrtf(f32 x) {return (f32)sqrt((f64)x);}
 ILINE f32 cry_isqrtf(f32 x) {return 1.f/cry_sqrtf(x);}
 ILINE f32 cry_isqrtf_fast(f32 x) {return 1.f/cry_sqrtf(x);}
+ILINE f32 cry_isqrtf_corrected(f32 x) {return 1.f/cry_sqrtf(x);}
 ILINE f32 cry_fabsf(f32 x) {return (f32)fabs((f64)x);}
 ILINE f32 cry_expf(f32 x) {return (f32)exp((f64)x);}
 ILINE f32 cry_logf(f32 x) {return (f32)log((f64)x);}
@@ -446,6 +447,10 @@ ILINE f32 cry_isqrtf_fast(f32 x)
 	float r; _mm_store_ss(&r, s);
 	return r;
 }
+ILINE f32 cry_isqrtf_corrected(f32 x) 
+{
+	return cry_isqrtf(x);
+}
 
 #else // #if defined(_CPU_X86) && defined(_MSC_VER) && !defined(LINUX)
 
@@ -462,6 +467,8 @@ ILINE f32 cry_sqrtf_fast(f32 x) {return sqrtf(x);}
 ILINE f32 cry_isqrtf(f32 x) {return 1.f/sqrtf(x);}
 #ifndef XENON
 ILINE f32 cry_isqrtf_fast(f32 x) {return 1.f/sqrtf(x);}
+ILINE f32 cry_isqrtf_corrected(f32 x) {return 1.f/sqrtf(x);}
+
 
 
 #endif
@@ -526,6 +533,7 @@ ILINE f64 isqrt_tpl(f64 op) { return 1.0/sqrt(op); }
 ILINE f32 isqrt_tpl(f32 op) { return cry_isqrtf(op); }
 
 ILINE f32 isqrt_fast_tpl(f32 op) { return cry_isqrtf_fast(op); }
+ILINE f32 isqrt_corrected_tpl(f32 op) { return cry_isqrtf_corrected(op); }
 
 ILINE f64 isqrt_safe_tpl(f64 op) { return 1.0/sqrt(op + DBL_MIN); }
 ILINE f32 isqrt_safe_tpl(f32 op) { return cry_isqrtf(op + FLT_MIN); }

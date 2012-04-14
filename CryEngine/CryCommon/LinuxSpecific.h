@@ -448,6 +448,11 @@ typedef struct _SECURITY_ATTRIBUTES
 		return counter.QuadPart;
 	}
 
+	inline uint32 GetTickCount()
+	{
+		return uint32(CryGetTicks() * 1000 / CryGetTickFrequency());
+	}
+
 #endif //__cplusplus
 
 inline int _CrtCheckMemory() { return 1; };

@@ -37,6 +37,7 @@ public:
 		, m_fogColor( 0.2f, 0.5f, 0.7f )
 		, m_viewerInsideVolume( false )
 		, m_viewerCloseToWaterPlane( false )
+		, m_viewerCloseToWaterVolume( false )
     {
 		}
 
@@ -54,6 +55,7 @@ public:
 
     bool m_viewerInsideVolume;
 		bool m_viewerCloseToWaterPlane;
+		bool m_viewerCloseToWaterVolume;
 	};
 
 	struct SOceanParams

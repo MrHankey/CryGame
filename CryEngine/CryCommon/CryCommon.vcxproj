@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Performance|Win32">
+      <Configuration>Performance</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Performance|x64">
+      <Configuration>Performance</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Profile Server Only|Win32">
       <Configuration>Profile Server Only</Configuration>
       <Platform>Win32</Platform>
@@ -45,12 +53,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AEB958D4-45CA-478B-BA8E-D0E897CE974B}</ProjectGuid>
     <RootNamespace>CryCommon</RootNamespace>
-
-
-
-    <Keyword>MakeFileProj</Keyword>
-
-  </PropertyGroup>
+<Keyword>MakeFileProj</Keyword>
+</PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
@@ -71,6 +75,11 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
@@ -98,6 +107,11 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -121,6 +135,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(SolutionDir).\StandardSDKs.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
@@ -141,13 +159,21 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(SolutionDir).\StandardSDKs.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\..\Bin64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">$(SolutionDir)..\..\Bin64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\..\Bin32\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\..\Bin64\</OutDir>
@@ -166,6 +192,11 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'">$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
@@ -194,8 +225,12 @@
     <ClInclude Include="AgentParams.h" />
     <ClInclude Include="Allocator.h" />
     <ClInclude Include="auto_vector.h" />
+    <ClInclude Include="CREBreakableGlass.h" />
+    <ClInclude Include="CREBreakableGlassConfig.h" />
+    <ClInclude Include="CREBreakableGlassHelpers.h" />
     <ClInclude Include="CRELightPropagationVolume.h" />
     <ClInclude Include="CryExtension\Impl\Conversion.h" />
+    <ClInclude Include="CryFixedArray.h" />
     <ClInclude Include="CryLobbyEvent.h" />
     <ClInclude Include="FinalizingSpline.h" />
     <ClInclude Include="GenericParam.h" />
@@ -208,6 +243,8 @@
     <ClInclude Include="IAttachment.h" />
     <ClInclude Include="IAudioDevice.h" />
     <ClInclude Include="IBitStream.h" />
+    <ClInclude Include="IBreakableGlassSystem.h" />
+    <ClInclude Include="IBreakableManager.h" />
     <ClInclude Include="IBudgetingSystem.h" />
     <ClInclude Include="ICharacterPartsManager.h" />
     <ClInclude Include="IChunkFile.h" />
@@ -251,8 +288,8 @@
     <ClInclude Include="IFileChangeMonitor.h" />
     <ClInclude Include="IFlashPlayer.h" />
     <ClInclude Include="IFlashUI.h" />
-    <ClInclude Include="IFlowgraphDebugger.h" />
-    <ClInclude Include="IFlowgraphModuleManager.h" />
+    <ClInclude Include="IFlowGraphDebugger.h" />
+    <ClInclude Include="IFlowGraphModuleManager.h" />
     <ClInclude Include="IFlowSystem.h" />
     <ClInclude Include="IFont.h" />
     <ClInclude Include="IGame.h" />
@@ -289,7 +326,6 @@
     <ClInclude Include="IPhysics.h" />
     <ClInclude Include="IPlatformOS.h" />
     <ClInclude Include="IProcess.h" />
-    <ClInclude Include="IProtectionManager.h" />
     <ClInclude Include="IReadWriteXMLSink.h" />
     <ClInclude Include="IRealtimeRemoteUpdate.h" />
     <ClInclude Include="IRemoteControl.h" />
@@ -357,6 +393,8 @@
     <ClInclude Include="IFactionMap.h" />
     <ClInclude Include="IGoalPipe.h" />
     <ClInclude Include="INavigation.h" />
+    <ClInclude Include="INavigationSystem.h" />
+    <ClInclude Include="INavigationSystem_info.h" />
     <ClInclude Include="IPathfinder.h" />
     <ClInclude Include="ISelectionTreeManager.h" />
     <ClInclude Include="ITargetTrackManager.h" />
@@ -419,6 +457,8 @@
     <ClInclude Include="EntityDesc.h" />
     <ClInclude Include="Force.h" />
     <ClInclude Include="FrameProfiler.h" />
+    <ClInclude Include="FixedAllocator.h" />
+    <ClInclude Include="FixedPoint.h" />
     <ClInclude Include="functor.h" />
     <ClInclude Include="GameUtils.h" />
     <ClInclude Include="HashGrid.h" />
@@ -463,6 +503,7 @@
     <ClInclude Include="SerializationTypes.h" />
     <ClInclude Include="SerializeBuffer.h" />
     <ClInclude Include="SerializeFwd.h" />
+    <ClInclude Include="SimpleHashLookUp.h" />
     <ClInclude Include="SimpleSerialize.h" />
     <ClInclude Include="smartptr.h" />
     <ClInclude Include="StackContainer.h" />
@@ -593,7 +634,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Performance|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="LCGRandom.cpp" />
     <ClCompile Include="MTPseudoRandom.cpp" />

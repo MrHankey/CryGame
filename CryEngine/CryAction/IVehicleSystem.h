@@ -877,9 +877,17 @@ struct IVehicle : public IGameObjectExtension
 	// Is vehicle probably distant from the player?
 	virtual bool IsProbablyDistant() const = 0;
 
-  virtual bool IsIndestructable() const = 0;
-	// Sound parameters structure.
+	virtual bool IsIndestructable() const = 0;
 
+	// Summary:
+	//Used in MP for logically linking associated vehicles together when spawning
+	virtual EntityId GetParentEntityId() const = 0;
+	virtual void SetParentEntityId(EntityId parentEntityId) = 0;
+
+	// Evacuate all passengers immediately on a client without having to ask the server for permission
+	virtual void ClientEvictAllPassengers() = 0;
+
+	// Sound parameters structure.
 	struct SSoundParams
 	{
 		string	engineProjectName;
@@ -1001,6 +1009,8 @@ struct IVehicleMovement
 		eVME_NW_Discharge,
 		eVME_EnableHandbrake,
 		eVME_PartDetached,
+		eVME_SetFactorMaxSpeed,
+		eVME_SetFactorAccel,
 		eVME_Others,
 	};
 

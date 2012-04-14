@@ -8,7 +8,7 @@ Description: Camera view -> compute camera position and orientation
 
 -------------------------------------------------------------------------
 History:
-- 01:2009 : Created By Jan Müller
+- 01:2009 : Created By Jan Mueller
 
 *************************************************************************/
 

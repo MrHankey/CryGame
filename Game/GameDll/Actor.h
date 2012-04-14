@@ -8,7 +8,7 @@
   
  -------------------------------------------------------------------------
   History:
-  - 7:10:2004   14:46 : Created by Márcio Martins
+  - 7:10:2004   14:46 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __Actor_H__
@@ -1031,7 +1031,7 @@ public:
 	//
 	virtual void Freeze(bool freeze) {};
 	virtual void Fall(Vec3 hitPos = Vec3(0,0,0), float time = 0.0f);
-	//throw away the actors helmet (if available) [Jan Müller]
+	//throw away the actors helmet (if available) [Jan Mueller]
 	virtual bool LooseHelmet(Vec3 hitDir = Vec3(0,0,0), Vec3 hitPos = Vec3(0,0,0));
 	virtual void GoLimp();
 	virtual void StandUp();
