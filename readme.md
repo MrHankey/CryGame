@@ -7,3 +7,5 @@ Get the release that corresponds to your engine version from the Downloads page,
 
 ## ...as a programmer?
 Whilst working with the CryENGINE3 SDK, you might implement a cool new feature that could benefit the community at large. After forking this repository and making your changes, you can submit a pull request and then, pending approval of the code, the entire community can use your feature!
+
+That said, please don't submit pull requests with game-specific features; anything added to this repo should be usable in a wide variety of projects.
