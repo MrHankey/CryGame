@@ -472,7 +472,7 @@ void CPlayerView::ViewThirdPerson(SViewParams &viewParams)
 		Vec3 targetBottom(g_pGameCVars->goc_targetBottomx, g_pGameCVars->goc_targetBottomy, g_pGameCVars->goc_targetBottomz);
 		
 		static Vec3 current(target);
-		//this is where are offsets calucaleted, it cloud use some more smoothing for smoother transitions
+		//this is where are offsets calucaleted, it cloud use some more smoothing for smoother transitions as now it's bit clunky
 		if(gEnv->pRenderer->GetCamera().GetAngles().y <= g_pGameCVars->goc_positionTop)
 		{
 			Interpolate(current, targetTop, 3.0f, m_in.frameTime);
