@@ -256,7 +256,7 @@ void SCVars::InitCVars(IConsole *pConsole)
 	pConsole->Register("goc_targetBottomx", &goc_targetBottomx, 0.5f, VF_DUMPTODISK, "secondary offset if");
 	pConsole->Register("goc_targetBottomy", &goc_targetBottomy, -2.5f, VF_DUMPTODISK, "secondary offset if");
 	pConsole->Register("goc_targetBottomz", &goc_targetBottomz, 0.7f, VF_DUMPTODISK, "secondary offset if");
-	REGISTER_COMMAND("GOCMode", CmdGOCMode, VF_NULL, "Enable GOC mode");'
+	REGISTER_COMMAND("GOCMode", CmdGOCMode, VF_NULL, "Enable GOC mode");
 
 	REGISTER_CVAR(g_enableSlimCheckpoints, 0, 0, "Enable the use of console style checkpoints instead of full save.");
 
