@@ -457,15 +457,34 @@ void CPlayerView::ViewThirdPerson(SViewParams &viewParams)
 
 	if (g_pGameCVars->goc_enable)
 	{
-		Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
-		static Vec3 current(target);
+		//Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
+		//static Vec3 current(target);
 
-		Interpolate(current, target, 5.0f, m_in.frameTime);
+		//Interpolate(current, target, 5.0f, m_in.frameTime);
 
 		// make sure we don't clip through stuff that much
 		Vec3 offsetX(0,0,0);
 		Vec3 offsetY(0,0,0);
 		Vec3 offsetZ(0,0,0);
+
+		Vec3 targetTop(g_pGameCVars->goc_targetTopx, g_pGameCVars->goc_targetTopy, g_pGameCVars->goc_targetTopz); 
+		Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
+		Vec3 targetBottom(g_pGameCVars->goc_targetBottomx, g_pGameCVars->goc_targetBottomy, g_pGameCVars->goc_targetBottomz);
+		
+		static Vec3 current(target);
+		//this is where are offsets calucaleted, it cloud use some more smoothing for smoother transitions
+		if(gEnv->pRenderer->GetCamera().GetAngles().y <= g_pGameCVars->goc_positionTop)
+		{
+			Interpolate(current, targetTop, 3.0f, m_in.frameTime);
+		} 
+		else if(gEnv->pRenderer->GetCamera().GetAngles().y >= g_pGameCVars->goc_positionBottom)
+		{
+			Interpolate(current, targetBottom, 3.0f, m_in.frameTime);
+		}
+		else
+		{
+			Interpolate(current, target, 3.0f, m_in.frameTime);
+		}
 		offsetX = m_io.viewQuatFinal.GetColumn0() * current.x;
 		offsetY = m_io.viewQuatFinal.GetColumn1() * (current.y-0.25f);
 		offsetZ = m_io.viewQuatFinal.GetColumn2() * current.z;
