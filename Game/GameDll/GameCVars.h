@@ -155,10 +155,7 @@ struct SCVars
 	float goc_targetx;
 	float goc_targety;
 	float goc_targetz;
-	float goc_positionTop;
 	float goc_positionBottom;
-	float goc_targetTopx;
-	float goc_targetTopy;
 	float goc_targetTopz;
 	float goc_targetBottomx;
 	float goc_targetBottomy;

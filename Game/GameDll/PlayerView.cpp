@@ -463,21 +463,26 @@ void CPlayerView::ViewThirdPerson(SViewParams &viewParams)
 		//Interpolate(current, target, 5.0f, m_in.frameTime);
 
 		// make sure we don't clip through stuff that much
+		
+		//smooth transition when you start looking from top (to floor). 
+		//clamp is nesseary or you may end up without player character on screen!
+		//unfortunetly it work only in one direction top or bottom ;(
+		float targetZ = clamp(g_pGameCVars->goc_targetz - static_cast<float>(gEnv->pRenderer->GetCamera().GetAngles().y), g_pGameCVars->goc_targetz, g_pGameCVars->goc_targetTopz);
+		//same as above just for looking up.
+		float bottomTargetZ = clamp(g_pGameCVars->goc_targetz + static_cast<float>(gEnv->pRenderer->GetCamera().GetAngles().y), g_pGameCVars->goc_targetz, g_pGameCVars->goc_targetBottomz);
+		float bottomTargetY = clamp(g_pGameCVars->goc_targety - static_cast<float>(gEnv->pRenderer->GetCamera().GetAngles().y), g_pGameCVars->goc_targety, g_pGameCVars->goc_targetBottomy);
 		Vec3 offsetX(0,0,0);
 		Vec3 offsetY(0,0,0);
 		Vec3 offsetZ(0,0,0);
-
-		Vec3 targetTop(g_pGameCVars->goc_targetTopx, g_pGameCVars->goc_targetTopy, g_pGameCVars->goc_targetTopz); 
-		Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
-		Vec3 targetBottom(g_pGameCVars->goc_targetBottomx, g_pGameCVars->goc_targetBottomy, g_pGameCVars->goc_targetBottomz);
+		
+		//+targetZ
+		Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, targetZ);
+		//but maybe is not bad thing, bottom need diffrent offsets anyway to compensate from collisions
+		Vec3 targetBottom(g_pGameCVars->goc_targetBottomx, bottomTargetY, bottomTargetZ);
 		
 		static Vec3 current(target);
-		//this is where are offsets calucaleted, it cloud use some more smoothing for smoother transitions as now it's bit clunky
-		if(gEnv->pRenderer->GetCamera().GetAngles().y <= g_pGameCVars->goc_positionTop)
-		{
-			Interpolate(current, targetTop, 3.0f, m_in.frameTime);
-		} 
-		else if(gEnv->pRenderer->GetCamera().GetAngles().y >= g_pGameCVars->goc_positionBottom)
+		//there must be if-else or we won't be able to pick up right offset
+		if(gEnv->pRenderer->GetCamera().GetAngles().y >= g_pGameCVars->goc_positionBottom)
 		{
 			Interpolate(current, targetBottom, 3.0f, m_in.frameTime);
 		}
