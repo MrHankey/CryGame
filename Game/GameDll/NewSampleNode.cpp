@@ -1,25 +1,20 @@
 #include "StdAfx.h"
 #include "BaseNode.h"
 
+// Example usage of the new CBaseNode
 class CBaseNodeExample : public CBaseNode
 {
 private:
 	enum EInputs
 	{
 		EIP_Activate,
-		EIP_String,
-		EIP_Int,
-		EIP_Float,
-		EIP_Vec3
+		EIP_LeftSide,
+		EIP_RightSide
 	};
 
 	enum EIOutputs
 	{
-		EOP_Activated,
-		EOP_String,
-		EOP_Int,
-		EOP_Float,
-		EOP_Vec3
+		EOP_Answer
 	};
 
 public:
@@ -35,7 +30,6 @@ public:
 
 	}
 
-	// Return a new instance of this node, has to be implemented per class
 	virtual IFlowNodePtr Clone(SActivationInfo *pActInfo)
 	{
 		return new CBaseNodeExample(pActInfo);
@@ -48,15 +42,15 @@ public:
 		static const SInputPortConfig inputs[] =
 		{
 			InputPortConfig_Void("Activate"),
-			InputPortConfig<string>("String Input", ""),
+			InputPortConfig<float>("Left", 0),
+			InputPortConfig<float>("Right", 0),
 			{0}
 		};
 
 		// These should correspond to entries in the EOutputs enum
 		static const SOutputPortConfig outputs[] =
 		{
-			OutputPortConfig_Void("Activated"),
-			OutputPortConfig<string>("String Fired"),
+			OutputPortConfig<float>("Answer"),
 			{0}
 		};
 
@@ -70,15 +64,13 @@ public:
 		config.SetCategory(EFLN_APPROVED);
 	}
 
-	// Called when this node is initialised, which is when game mode is entered
+	// Called when the eFE_Initialize event is sent
 	virtual void OnInit()
 	{
-		CryLogAlways("Initialised!");
 
-		// To subscribe to regular updates via OnUpdate(), use the following:
-		//this->SetUpdated(true);
 	}
 
+	// Called regularly if this node is set to receive updates via this->SetUpdated(true);
 	virtual void OnUpdate()
 	{
 
@@ -86,23 +78,96 @@ public:
 
 	virtual void OnActivate()
 	{
-		// Use IsActive and your port ID to check whether an input has been fired
-		if(IsActive(EIP_Activate))
+		// Check whether a port has been fired with IsActive(portId)
+		if(this->IsActive(EIP_Activate))
 		{
-			// Void outputs can be triggered via Activate with no additional paramemeters
-			Activate(EOP_Activated);
-		}
-
-		if(IsActive(EIP_String))
-		{
-			// Use GetPortValue<T> to retrieve an input port's value
-			string value = GetPortValue<string>(EIP_String);
+			// Use GetPortValue<T>(portId) to retrieve an input port's value
+			auto sum = this->GetPortValue<float>(EIP_LeftSide) * this->GetPortValue<float>(EIP_RightSide);
 			
 			// Ports with data can be fired by passing a second parameter
-			Activate(EOP_String, value);
+			this->Activate(EOP_Answer, sum);
 		}
 	}
 };
 
 // Register this node with a category and name
-REGISTER_FLOW_NODE("Samples:Test", CBaseNodeExample);
+REGISTER_FLOW_NODE("Samples:Multiply", CBaseNodeExample);
+
+// Type tests, not useful for anything production-related
+class CNodeTypeTests : public CBaseNode
+{
+private:
+	enum EInputs
+	{
+		EIP_Void,
+		EIP_Int,
+		EIP_Float,
+		EIP_String,
+		EIP_Vec3
+	};
+
+	enum EOutputs
+	{
+		EOP_Void,
+		EOP_Int,
+		EOP_Float,
+		EOP_String,
+		EOP_Vec3
+	};
+
+public:
+	CNodeTypeTests(SActivationInfo *pActInfo)
+	{
+
+	}
+		
+	virtual void GetConfiguration(SFlowNodeConfig& config)
+	{
+		static const SInputPortConfig inputs[] =
+		{
+			InputPortConfig_Void("Activate"),
+			InputPortConfig<int>("Integer", 1),
+			InputPortConfig<float>("Float", 0.5f),
+			InputPortConfig<string>("String"),
+			InputPortConfig<Vec3>("Vector", Vec3(0)),
+			{0}
+		};
+
+		static const SOutputPortConfig outputs[] =
+		{
+			OutputPortConfig_Void("Activate"),
+			OutputPortConfig<int>("Integer"),
+			OutputPortConfig<float>("Float"),
+			OutputPortConfig<string>("String"),
+			OutputPortConfig<Vec3>("Vector"),
+			{0}
+		};
+
+		config.pInputPorts = inputs;
+		config.pOutputPorts = outputs;
+
+		config.sDescription = "Sanity test for functionality";
+
+		config.SetCategory(EFLN_DEBUG);
+	}
+
+	virtual IFlowNodePtr Clone(SActivationInfo *pActInfo)
+	{
+		return new CNodeTypeTests(pActInfo);
+	}
+
+	virtual void OnActivate()
+	{
+		if(this->IsActive(EIP_Void))
+		{
+			this->Activate(EOP_Int, this->GetPortValue<int>(EIP_Int));
+			this->Activate(EOP_Float, this->GetPortValue<float>(EIP_Float));
+			this->Activate(EOP_String, this->GetPortValue<string>(EIP_String));
+			this->Activate(EOP_Vec3, this->GetPortValue<Vec3>(EIP_Vec3));
+
+			this->Activate(EOP_Void);
+		}
+	}
+};
+
+REGISTER_FLOW_NODE("Samples:TypeTests", CNodeTypeTests);

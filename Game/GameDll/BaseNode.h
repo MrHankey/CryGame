@@ -1,11 +1,11 @@
-// Ruan Pearce-Authers <ruan@crytek.com>
+
 // Simplified base flownode class
+// by Ruan Pearce-Authers <ruan@crytek.com>
 
 #include "StdAfx.h"
 #include "Nodes/G2FlowBaseNode.h"
 
-#ifndef BASE_NODE_H
-#define BASE_NODE_H
+#pragma once
 
 class CBaseNode : public CFlowBaseNode<eNCT_Instanced>
 {
@@ -46,12 +46,13 @@ protected:
 	}
 
 public:
-	virtual void GetMemoryUsage(ICrySizer * s) const
+	virtual void GetMemoryUsage(ICrySizer *s) const
 	{
 		s->Add(*this);
 	}
 
-	// Processes events
+	// Processes events sent from the FlowSystem
+	// TODO: Add more stuff.
 	virtual void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
 	{
 		m_pActInfo = pActInfo;
@@ -78,14 +79,11 @@ public:
 		}
 	}
 
-	// Called when the node is initialised
 	virtual void OnInit() { }
 
 	// Called when an input port is activated
 	virtual void OnActivate() { }
 
-	// Called when this node is updated, provided this node is registered for them
+	// Called when this node is updated, provided this node is registered to receive updates
 	virtual void OnUpdate() { }
 };
-
-#endif
