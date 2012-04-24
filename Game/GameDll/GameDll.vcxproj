@@ -497,6 +497,8 @@
     <ClCompile Include="Flyer.cpp" />
     <ClCompile Include="FlyerMovementController.cpp" />
     <ClCompile Include="HUD\UIGameEvents.cpp" />
+    <ClCompile Include="BaseNode.h" />
+    <ClCompile Include="NewSampleNode.cpp" />
     <ClCompile Include="ScriptBind_Actor.cpp" />
     <ClCompile Include="Shark.cpp" />
     <ClCompile Include="SharkMovementController.cpp" />

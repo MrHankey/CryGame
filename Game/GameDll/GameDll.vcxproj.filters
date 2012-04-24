@@ -734,6 +734,12 @@
     <ClCompile Include="HUD\UIGameEvents.cpp">
       <Filter>HUD</Filter>
     </ClCompile>
+    <ClCompile Include="NewSampleNode.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseNode.h">
+      <Filter>Nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStartup.h">
