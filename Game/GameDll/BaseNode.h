@@ -39,13 +39,19 @@ protected:
 		return *m_pActInfo->pInputPorts[portId].GetPtr<T>();
 	}
 
+	// Enables and disables sending of regular update events
+	void SetUpdated(bool enabled)
+	{
+		m_pActInfo->pGraph->SetRegularlyUpdated(m_pActInfo->myID, enabled);
+	}
+
 public:
 	virtual void GetMemoryUsage(ICrySizer * s) const
 	{
 		s->Add(*this);
 	}
 
-	// Processes 
+	// Processes events
 	virtual void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
 	{
 		m_pActInfo = pActInfo;
@@ -68,6 +74,7 @@ public:
 				{
 					OnUpdate();
 				}
+				break;
 		}
 	}
 
@@ -77,7 +84,7 @@ public:
 	// Called when an input port is activated
 	virtual void OnActivate() { }
 
-	// Called when a 
+	// Called when this node is updated, provided this node is registered for them
 	virtual void OnUpdate() { }
 };
 
