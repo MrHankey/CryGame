@@ -46,9 +46,17 @@ protected:
 	}
 
 public:
+
+	// Should be overriden if you need to register additional resources
 	virtual void GetMemoryUsage(ICrySizer *s) const
 	{
 		s->Add(*this);
+	}
+
+	// This is only used for singleton nodes, which we don't support for simplicity's sake
+	virtual IFlowNodePtr Clone(SActivationInfo *pActInfo)
+	{
+		return NULL;
 	}
 
 	// Processes events sent from the FlowSystem
