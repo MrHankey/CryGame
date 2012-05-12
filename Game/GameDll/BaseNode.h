@@ -11,38 +11,38 @@ class CBaseNode : public CFlowBaseNode<eNCT_Instanced>
 {
 protected:
 	// Node data
-	SActivationInfo *m_pActInfo;
+	SActivationInfo m_actInfo;
 
 	// Tests whether a given port is active
 	bool IsActive(int portId)
 	{
-		return IsPortActive(m_pActInfo, portId);
+		return IsPortActive(&m_actInfo, portId);
 	}
-	
+
 	// Activates a void output port
 	void Activate(int portId)
 	{
-		ActivateOutput(m_pActInfo, portId, 0);
+		ActivateOutput(&m_actInfo, portId, 0);
 	}
 
 	// Activates an output port with data
 	template<typename T>
 	void Activate(int portId, T value)
 	{
-		ActivateOutput(m_pActInfo, portId, value);
+		ActivateOutput(&m_actInfo, portId, value);
 	}
 
 	// Gets a port value
 	template<typename T>
 	T GetPortValue(int portId)
 	{
-		return *m_pActInfo->pInputPorts[portId].GetPtr<T>();
+		return *((&m_actInfo)->pInputPorts[portId].GetPtr<T>());
 	}
 
 	// Enables and disables sending of regular update events
 	void SetUpdated(bool enabled)
 	{
-		m_pActInfo->pGraph->SetRegularlyUpdated(m_pActInfo->myID, enabled);
+		(&m_actInfo)->pGraph->SetRegularlyUpdated((&m_actInfo)->myID, enabled);
 	}
 
 public:
@@ -63,30 +63,31 @@ public:
 	// TODO: Add more stuff.
 	virtual void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
 	{
-		m_pActInfo = pActInfo;
+		m_actInfo = *pActInfo;
 
 		switch(event)
 		{
 			case eFE_Initialize:
-				{
-					OnInit();
-				}
-				break;
+			{
+				OnInit();
+			}
+			break;
 
 			case eFE_Activate:
-				{
-					OnActivate();
-				}
-				break;
+			{
+				OnActivate();
+			}
+			break;
 
 			case eFE_Update:
-				{
-					OnUpdate();
-				}
-				break;
+			{
+				OnUpdate();
+			}
+			break;
 		}
 	}
 
+	// Called when initialisation events are sent
 	virtual void OnInit() { }
 
 	// Called when an input port is activated
