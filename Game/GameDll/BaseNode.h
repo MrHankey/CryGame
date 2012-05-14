@@ -12,6 +12,7 @@ class CBaseNode : public CFlowBaseNode<eNCT_Instanced>
 protected:
 	// Node data
 	SActivationInfo m_actInfo;
+	EntityId m_targetEntityId;
 
 	// Tests whether a given port is active
 	bool IsActive(int portId)
@@ -45,8 +46,18 @@ protected:
 		(&m_actInfo)->pGraph->SetRegularlyUpdated((&m_actInfo)->myID, enabled);
 	}
 
-public:
+	IEntity *GetTargetEntity()
+	{
+		return gEnv->pEntitySystem->GetEntity(m_targetEntityId);
+	}
 
+	EntityId GetTargetEntityId()
+	{
+		auto target = GetTargetEntity();
+		return target ? target->GetId() : 0;
+	}
+
+public:
 	// Should be overriden if you need to register additional resources
 	virtual void GetMemoryUsage(ICrySizer *s) const
 	{
@@ -54,14 +65,14 @@ public:
 	}
 
 	// This is only used for singleton nodes, which we don't support for simplicity's sake
-	virtual IFlowNodePtr Clone(SActivationInfo *pActInfo)
+	IFlowNodePtr Clone(SActivationInfo *pActInfo)
 	{
 		return NULL;
 	}
 
 	// Processes events sent from the FlowSystem
 	// TODO: Add more stuff.
-	virtual void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
+	void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
 	{
 		m_actInfo = *pActInfo;
 
@@ -70,6 +81,12 @@ public:
 			case eFE_Initialize:
 			{
 				OnInit();
+			}
+			break;
+
+			case eFE_SetEntityId:
+			{
+				m_targetEntityId = pActInfo->pEntity ? pActInfo->pEntity->GetId() : 0;
 			}
 			break;
 
