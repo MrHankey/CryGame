@@ -748,7 +748,7 @@ void CGameRules::OnReviveInVehicle(CActor *pActor, EntityId vehicleId, int seatI
 	SGameObjectEvent evt(eCGE_ActorRevive,eGOEF_ToAll, IGameObjectSystem::InvalidExtensionID, (void*)pActor);
 	
 	ScriptHandle handle(pActor->GetEntityId());
-	ScriptHandle vhandle(pActor->GetEntityId());
+	ScriptHandle vhandle(vehicleId);
 	CallScript(m_clientScript, "OnReviveInVehicle", handle, vhandle, seatId, teamId);
 }
 
