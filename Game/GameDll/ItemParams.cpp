@@ -321,6 +321,10 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 				animation.camera_reorient=reorient!=0;
 			}
 			
+			int isAdditive = 0;
+			child->GetAttribute("additive", isAdditive);
+			animation.additive = isAdditive != 0;
+
 			animation.name = name;
 			animation.speed = speed;
 			animation.blend = blend;

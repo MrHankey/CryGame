@@ -854,6 +854,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 			SAnimation &animation=action.animation[i][anim];
 			if (!animation.name.empty())
 			{
+				if(animation.additive)
+					layer = 1;
+
 				float blend = animation.blend;
 				if (flags&eIPAF_NoBlend)
 					blend = 0.0f;

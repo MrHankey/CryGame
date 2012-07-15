@@ -511,6 +511,7 @@ public:
 		bool				camera_rot;
 		bool				camera_follow;
 		bool				camera_reorient;
+		bool				additive;
 	};
 
   struct SEffect
