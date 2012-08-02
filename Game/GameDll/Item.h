@@ -39,6 +39,8 @@
 #define ITEM_FIRST_PERSON_TOKEN			"fp"
 #define ITEM_THIRD_PERSON_TOKEN			"tp"
 
+#define ITEM_MAX_ADDITIVE_LAYERS 15 // Might go beyond this, but Editor indicates that 15 is the limit.
+
 struct ICharacterInstance;
 struct AnimEventInstance;
 struct IAttachmentObject;
@@ -64,6 +66,8 @@ public:
 	struct DetachAction;
 	struct SelectAction;
 	struct DeselectAction;
+
+	struct AdditiveEndAction;
 
 	enum ePhysicalization
 	{
@@ -1230,6 +1234,10 @@ protected:
 	SEntityProperties			m_properties;
 	EntityId							m_hostId;
 	EntityId							m_postSerializeMountedOwner;
+
+	// The next layer in which an additive animation can be played.
+	// Decremented when an additive has finished playing.
+	int m_nextAdditiveLayer;
 
 	IScriptTable					*m_pEntityScript;
 

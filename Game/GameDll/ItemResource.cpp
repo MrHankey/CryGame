@@ -644,6 +644,17 @@ bool CItem::HasAction(const ItemString& action)
 }
 
 //------------------------------------------------------------------------
+struct CItem::AdditiveEndAction
+{
+	AdditiveEndAction() {};
+
+	void execute(CItem *item)
+	{
+		item->m_nextAdditiveLayer--;
+	}
+};
+
+//------------------------------------------------------------------------
 tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, uint32 flags, float speedOverride)
 {
 	if (!m_enableAnimations || !IsOwnerInGame())
@@ -861,7 +872,13 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 			if (!animation.name.empty())
 			{
 				if(animation.additive)
-					layer = 1;
+				{
+					if(layer > ITEM_MAX_ADDITIVE_LAYERS)
+						GameWarning("Playing additive animation in layer %i, theoretical limit is %i", layer, ITEM_MAX_ADDITIVE_LAYERS);
+
+					layer = m_nextAdditiveLayer;
+					m_nextAdditiveLayer++;
+				}
 
 				float blend = animation.blend;
 				if (flags&eIPAF_NoBlend)
@@ -870,6 +887,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 					PlayAnimationEx(name, i, layer, loop, blend, speedOverride, flags);
 				else
 					PlayAnimationEx(name, i, layer, loop, blend, animation.speed, flags);
+
+				if(animation.additive)
+					GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<AdditiveEndAction>::Create(AdditiveEndAction()), false);
 			}
 
 			if ((m_stats.fp || m_stats.viewmode&eIVM_FirstPerson) && i==eIGS_FirstPerson && !animation.camera_helper.empty())

@@ -98,7 +98,8 @@ CItem::CItem()
 	m_serializeActivePhysics(0),
 	m_serializeDestroyed(false),
 	m_registeredAs1pUser(false),
-	m_registeredAs3pUser(false)
+	m_registeredAs3pUser(false),
+	m_nextAdditiveLayer(1)
 {
 #ifdef ITEM_DEBUG_MEMALLOC
 	++gInstanceCount;
