@@ -1229,6 +1229,35 @@ void CItem::Select(bool select)
 		CloakEnable(false, false);
 	OnSelected(select);
 }
+
+//------------------------------------------------------------------------
+struct CItem::DeselectAction
+{
+	DeselectAction(EntityId itemId) : nextItemId(itemId) {};
+
+	void execute(CItem *item)
+	{
+		item->SetBusy(false);
+
+		item->GetOwnerActor()->SelectItem(nextItemId, true);
+	}
+
+	EntityId nextItemId;
+};
+
+void CItem::Deselect(EntityId nextItemId)
+{
+	if(HasAction(g_pItemStrings->deselect))
+	{
+		SetBusy(true);
+
+		PlayAction(g_pItemStrings->deselect, 0, false, eIPAF_Default|eIPAF_NoBlend);
+		GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<DeselectAction>::Create(DeselectAction(nextItemId)), false);
+	}
+	else
+		GetOwnerActor()->SelectItem(nextItemId, true);
+}
+
 //------------------------------------------------------------------------
 void CItem::Drop(float impulseScale, bool selectNext, bool byDeath)
 {

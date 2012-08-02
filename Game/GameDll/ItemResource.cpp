@@ -638,6 +638,12 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 }
 
 //------------------------------------------------------------------------
+bool CItem::HasAction(const ItemString& action)
+{
+	return m_sharedparams->actions.find(CONST_TEMPITEM_STRING(action)) != m_sharedparams->actions.end();
+}
+
+//------------------------------------------------------------------------
 tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, uint32 flags, float speedOverride)
 {
 	if (!m_enableAnimations || !IsOwnerInGame())
