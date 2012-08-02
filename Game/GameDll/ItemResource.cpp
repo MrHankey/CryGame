@@ -638,6 +638,25 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 }
 
 //------------------------------------------------------------------------
+bool CItem::HasAction(const ItemString& action)
+{
+	return m_sharedparams->actions.find(CONST_TEMPITEM_STRING(action)) != m_sharedparams->actions.end();
+}
+
+//------------------------------------------------------------------------
+struct CItem::AdditiveEndAction
+{
+	AdditiveEndAction(int layerNum) : layer(layerNum) {};
+
+	void execute(CItem *item)
+	{
+		item->m_additiveLayers[layer - 1] = false;
+	}
+
+	int layer;
+};
+
+//------------------------------------------------------------------------
 tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, uint32 flags, float speedOverride)
 {
 	if (!m_enableAnimations || !IsOwnerInGame())
@@ -854,6 +873,23 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 			SAnimation &animation=action.animation[i][anim];
 			if (!animation.name.empty())
 			{
+				if(animation.additive)
+				{
+					if(layer > ITEM_MAX_ADDITIVE_LAYERS)
+						GameWarning("Attempted to play additive animation in layer %i, limit is %i", layer, ITEM_MAX_ADDITIVE_LAYERS);
+
+					for(int i = 0; i < ITEM_MAX_ADDITIVE_LAYERS; i++)
+					{
+						if(!m_additiveLayers[i])
+						{
+							layer = i + 1;
+							m_additiveLayers[i] = true;
+
+							break;
+						}
+					}
+				}
+
 				float blend = animation.blend;
 				if (flags&eIPAF_NoBlend)
 					blend = 0.0f;
@@ -861,6 +897,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 					PlayAnimationEx(name, i, layer, loop, blend, speedOverride, flags);
 				else
 					PlayAnimationEx(name, i, layer, loop, blend, animation.speed, flags);
+
+				if(animation.additive)
+					GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<AdditiveEndAction>::Create(AdditiveEndAction(layer)), false);
 			}
 
 			if ((m_stats.fp || m_stats.viewmode&eIVM_FirstPerson) && i==eIGS_FirstPerson && !animation.camera_helper.empty())

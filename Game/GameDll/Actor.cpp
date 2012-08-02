@@ -2924,7 +2924,9 @@ void CActor::SelectNextItem(int direction, bool keepHistory, const char *categor
 
 	int startSlot = -1;
 	int delta = direction;
-	EntityId currentItemId = pInventory->GetCurrentItem();
+
+	CItem *pCurrentItem = static_cast<CItem *>(GetCurrentItem());
+	EntityId currentItemId = pCurrentItem ? pCurrentItem->GetEntityId() : 0;
 
 	if (currentItemId)
 		startSlot = pInventory->FindItem(currentItemId);
@@ -2947,7 +2949,10 @@ void CActor::SelectNextItem(int direction, bool keepHistory, const char *categor
 
 		if (pItem && pItem->CanSelect() && !pItem->GetDualWieldMasterId() && (!category || !strcmp(m_pItemSystem->GetItemCategory(pItem->GetEntity()->GetClass()->GetName()), category)))
 		{
-			SelectItem(pItem->GetEntityId(), true);
+			if(pCurrentItem)
+				pCurrentItem->Deselect(itemId);
+			else
+				SelectItem(pItem->GetEntityId(), true);
 
 			return;
 		}

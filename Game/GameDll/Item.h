@@ -39,6 +39,8 @@
 #define ITEM_FIRST_PERSON_TOKEN			"fp"
 #define ITEM_THIRD_PERSON_TOKEN			"tp"
 
+#define ITEM_MAX_ADDITIVE_LAYERS 15 // Might go beyond this, but Editor indicates that 15 is the limit.
+
 struct ICharacterInstance;
 struct AnimEventInstance;
 struct IAttachmentObject;
@@ -63,6 +65,9 @@ public:
 	struct AttachAction;
 	struct DetachAction;
 	struct SelectAction;
+	struct DeselectAction;
+
+	struct AdditiveEndAction;
 
 	enum ePhysicalization
 	{
@@ -511,6 +516,7 @@ public:
 		bool				camera_rot;
 		bool				camera_follow;
 		bool				camera_reorient;
+		bool				additive;
 	};
 
   struct SEffect
@@ -673,6 +679,7 @@ public:
 	virtual void SetHand(int hand);
 	virtual void Use(EntityId userId);
 	virtual void Select(bool select);
+	virtual void Deselect(EntityId nextItemId);
 	virtual void Drop(float impulseScale=1.0f, bool selectNext=true, bool byDeath=false);
 	virtual void PickUp(EntityId pickerId, bool sound, bool select=true, bool keepHistory=true, const char *setup = NULL);
 	//virtual void PickUpWithMountItem(EntityId picker, IEntityClass* pMountItemClass, bool sound, bool select=true, bool keepHistory=true, const char *setup = NULL);
@@ -916,6 +923,7 @@ public:
 
 	typedef CryFixedStringT<256> TempResourceName;
 	void FixResourceName(const ItemString& name, TempResourceName& fixedName, int flags, const char *hand=0, const char *suffix=0, const char *pose=0, const char *pov=0, const char *env=0);
+	bool HasAction(const ItemString& action);
 	tSoundID PlayAction(const ItemString& action, int layer=0, bool loop=false, uint32 flags = eIPAF_Default, float speedOverride = -1.0f);
 	void PlayAnimation(const char* animationName, int layer=0, bool loop=false, uint32 flags = eIPAF_Default);
 	void PlayAnimationEx(const char* animationName, int slot=eIGS_FirstPerson, int layer=0, bool loop=false, float blend=0.175f, float speed=1.0f, uint32 flags = eIPAF_Default);
@@ -1226,6 +1234,9 @@ protected:
 	SEntityProperties			m_properties;
 	EntityId							m_hostId;
 	EntityId							m_postSerializeMountedOwner;
+
+	// If true, the specified layer is currently being used.
+	bool m_additiveLayers[ITEM_MAX_ADDITIVE_LAYERS];
 
 	IScriptTable					*m_pEntityScript;
 
