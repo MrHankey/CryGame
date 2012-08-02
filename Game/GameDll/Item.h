@@ -1235,9 +1235,8 @@ protected:
 	EntityId							m_hostId;
 	EntityId							m_postSerializeMountedOwner;
 
-	// The next layer in which an additive animation can be played.
-	// Decremented when an additive has finished playing.
-	int m_nextAdditiveLayer;
+	// If true, the specified layer is currently being used.
+	bool m_additiveLayers[ITEM_MAX_ADDITIVE_LAYERS];
 
 	IScriptTable					*m_pEntityScript;
 

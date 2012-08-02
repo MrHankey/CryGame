@@ -646,12 +646,14 @@ bool CItem::HasAction(const ItemString& action)
 //------------------------------------------------------------------------
 struct CItem::AdditiveEndAction
 {
-	AdditiveEndAction() {};
+	AdditiveEndAction(int layerNum) : layer(layerNum) {};
 
 	void execute(CItem *item)
 	{
-		item->m_nextAdditiveLayer--;
+		item->m_additiveLayers[layer - 1] = false;
 	}
+
+	int layer;
 };
 
 //------------------------------------------------------------------------
@@ -874,10 +876,18 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 				if(animation.additive)
 				{
 					if(layer > ITEM_MAX_ADDITIVE_LAYERS)
-						GameWarning("Playing additive animation in layer %i, theoretical limit is %i", layer, ITEM_MAX_ADDITIVE_LAYERS);
+						GameWarning("Attempted to play additive animation in layer %i, limit is %i", layer, ITEM_MAX_ADDITIVE_LAYERS);
 
-					layer = m_nextAdditiveLayer;
-					m_nextAdditiveLayer++;
+					for(int i = 0; i < ITEM_MAX_ADDITIVE_LAYERS; i++)
+					{
+						if(!m_additiveLayers[i])
+						{
+							layer = i + 1;
+							m_additiveLayers[i] = true;
+
+							break;
+						}
+					}
 				}
 
 				float blend = animation.blend;
@@ -889,7 +899,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 					PlayAnimationEx(name, i, layer, loop, blend, animation.speed, flags);
 
 				if(animation.additive)
-					GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<AdditiveEndAction>::Create(AdditiveEndAction()), false);
+					GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<AdditiveEndAction>::Create(AdditiveEndAction(layer)), false);
 			}
 
 			if ((m_stats.fp || m_stats.viewmode&eIVM_FirstPerson) && i==eIGS_FirstPerson && !animation.camera_helper.empty())

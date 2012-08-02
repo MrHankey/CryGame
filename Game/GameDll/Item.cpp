@@ -98,8 +98,7 @@ CItem::CItem()
 	m_serializeActivePhysics(0),
 	m_serializeDestroyed(false),
 	m_registeredAs1pUser(false),
-	m_registeredAs3pUser(false),
-	m_nextAdditiveLayer(1)
+	m_registeredAs3pUser(false)
 {
 #ifdef ITEM_DEBUG_MEMALLOC
 	++gInstanceCount;
@@ -107,6 +106,7 @@ CItem::CItem()
 	memset(m_animationTime, 0, sizeof(m_animationTime));
 	memset(m_animationEnd, 0, sizeof(m_animationTime));
 	memset(m_animationSpeed, 0, sizeof(m_animationSpeed));
+	memset(m_additiveLayers, 0, sizeof(bool) * ITEM_MAX_ADDITIVE_LAYERS);
 }
 
 //------------------------------------------------------------------------
