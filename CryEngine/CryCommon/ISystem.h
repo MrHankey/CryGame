@@ -90,7 +90,7 @@ struct ICodeCheckpointMgr;
 struct ISoftCodeMgr;
 struct IZLibCompressor;
 struct IOutputPrintSink;
-
+class CPluginSystem;
 struct ILocalMemoryUsage;
 
 typedef void* WIN_HWND;
@@ -800,6 +800,7 @@ private:
 
 public:
 	SSystemGlobalEnvironment() : szCmdLine("") {};
+    CPluginSystem* pPluginSystem;
 };
 
 UNIQUE_IFACE struct IProfilingSystem

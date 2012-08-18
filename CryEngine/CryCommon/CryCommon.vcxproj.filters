@@ -72,9 +72,6 @@
     <ClInclude Include="IAnimationPoseModifier.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
-    <ClInclude Include="IAntiCheatManager.h">
-      <Filter>Interfaces_h</Filter>
-    </ClInclude>
     <ClInclude Include="IAttachment.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
@@ -346,9 +343,6 @@
       <Filter>Interfaces_h</Filter>
     </ClInclude>
     <ClInclude Include="ISplines.h">
-      <Filter>Interfaces_h</Filter>
-    </ClInclude>
-    <ClInclude Include="ISPULog.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
     <ClInclude Include="IStatObj.h">
@@ -972,34 +966,7 @@
     <ClInclude Include="GeomQuery.h">
       <Filter>MathLib</Filter>
     </ClInclude>
-    <ClInclude Include="console\Cry_PS3_Math.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_HWMatrix3.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_HWVector3.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_Math.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_Matrix3.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_Optimize.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_Quat.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
-    <ClInclude Include="console\Cry_Xenon_Vector3.h">
-      <Filter>MathLib\Consoles</Filter>
-    </ClInclude>
     <ClInclude Include="CryAssert_impl.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="CryAssert_Xenon.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
     <ClInclude Include="CryDLMalloc.h">
@@ -1014,16 +981,10 @@
     <ClInclude Include="CryThread_dummy.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
-    <ClInclude Include="CryThread_ps3.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
     <ClInclude Include="CryThread_pthreads.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
     <ClInclude Include="CryThread_windows.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="CryThreadImpl_ps3.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
     <ClInclude Include="CryThreadImpl_pthreads.h">
@@ -1062,31 +1023,13 @@
     <ClInclude Include="platform_impl.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
-    <ClInclude Include="PS3_Win32Wrapper.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="PS3CryCache.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="PS3Specific.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
     <ClInclude Include="STLPortConfig.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="SysCallThread_PS3.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
     <ClInclude Include="Win32specific.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
     <ClInclude Include="Win64specific.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="Xenon_MT.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="XenonSpecific.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
     <ClInclude Include="CheatProtection.h">
@@ -1219,12 +1162,6 @@
     <ClInclude Include="CryCustomTypes.h">
       <Filter>Common_h</Filter>
     </ClInclude>
-    <ClInclude Include="JobManager_SPUDriver.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
-    <ClInclude Include="SpuUtils.h">
-      <Filter>Platform_h</Filter>
-    </ClInclude>
     <ClInclude Include="LCGRandom.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="ICharacterPartsManager.h">
@@ -1291,6 +1228,7 @@
     <ClInclude Include="IBreakableManager.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
+    <ClInclude Include="IPluginBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CryCommon.cpp">
@@ -1305,16 +1243,7 @@
     <ClCompile Include="ResourceCompilerHelper.cpp">
       <Filter>Common_h</Filter>
     </ClCompile>
-    <ClCompile Include="console\Cry_PS3_Math.cpp">
-      <Filter>MathLib\Consoles</Filter>
-    </ClCompile>
     <ClCompile Include="CryStructPack.cpp">
-      <Filter>Platform_h</Filter>
-    </ClCompile>
-    <ClCompile Include="PS3LauncherCommon.cpp">
-      <Filter>Platform_h</Filter>
-    </ClCompile>
-    <ClCompile Include="PS3MemoryInterface.cpp">
       <Filter>Platform_h</Filter>
     </ClCompile>
     <ClCompile Include="WinBase.cpp">
@@ -1332,13 +1261,5 @@
     <None Include="CryHalf.inl">
       <Filter>MathLib</Filter>
     </None>
-    <None Include="cpuid64\cpuid64.asm">
-      <Filter>Misc</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="cpuid64\cpuid64.obj">
-      <Filter>Misc</Filter>
-    </Object>
   </ItemGroup>
 </Project>

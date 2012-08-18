@@ -53,8 +53,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AEB958D4-45CA-478B-BA8E-D0E897CE974B}</ProjectGuid>
     <RootNamespace>CryCommon</RootNamespace>
-<Keyword>MakeFileProj</Keyword>
-</PropertyGroup>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
@@ -325,6 +325,7 @@
     <ClInclude Include="IPerfHud.h" />
     <ClInclude Include="IPhysics.h" />
     <ClInclude Include="IPlatformOS.h" />
+    <ClInclude Include="IPluginBase.h" />
     <ClInclude Include="IProcess.h" />
     <ClInclude Include="IReadWriteXMLSink.h" />
     <ClInclude Include="IRealtimeRemoteUpdate.h" />

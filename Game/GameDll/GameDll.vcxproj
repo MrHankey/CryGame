@@ -240,6 +240,7 @@
       <PreprocessorDefinitions>GAMEDLL_EXPORTS;PROFILE;_PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>netapi32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -499,6 +500,7 @@
     <ClCompile Include="HUD\UIGameEvents.cpp" />
     <ClCompile Include="BaseNode.h" />
     <ClCompile Include="NewSampleNode.cpp" />
+    <ClCompile Include="PluginSystem.cpp" />
     <ClCompile Include="ScriptBind_Actor.cpp" />
     <ClCompile Include="Shark.cpp" />
     <ClCompile Include="SharkMovementController.cpp" />
@@ -727,6 +729,7 @@
     <ClInclude Include="FlyerMovementController.h" />
     <ClInclude Include="HUD\IUIGameEventSystem.h" />
     <ClInclude Include="HUD\UIGameEvents.h" />
+    <ClInclude Include="PluginSystem.h" />
     <ClInclude Include="ScriptBind_Actor.h" />
     <ClInclude Include="Shark.h" />
     <ClInclude Include="SharkMovementController.h" />

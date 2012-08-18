@@ -740,6 +740,7 @@
     <ClCompile Include="BaseNode.h">
       <Filter>Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="PluginSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStartup.h">
@@ -1330,6 +1331,7 @@
     <ClInclude Include="HUD\IUIGameEventSystem.h">
       <Filter>HUD</Filter>
     </ClInclude>
+    <ClInclude Include="PluginSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GameActions.actions">
