@@ -23,19 +23,34 @@ bool CPluginSystem::Init()
     
     //Get the full path of the cryengine root
     char workingDirBuffer[1024];
-    getcwd(workingDirBuffer, 1024);
+    _getcwd(workingDirBuffer, 1024);
 
     //Append plugin wildcard
-    string strRoot = workingDirBuffer;
+    string strRoot = workingDirBuffer + string("\\Plugins\\");
 
+    if ( GetFileAttributesA(strRoot.c_str()) == INVALID_FILE_ATTRIBUTES )
+    {
+        
+        CryLogAlways("PluginSystem - Plugin folders do not exist. Creating them now...");
+        if ( !gEnv->pCryPak->MakeDir( (strRoot + "\\Bin32\\").c_str() ) )
+        {
+            CryLogAlways("PluginSystem - Failed to create Bin32 folder.");
+        }
+        if ( !gEnv->pCryPak->MakeDir( (strRoot + "\\Bin64\\").c_str() ) )
+        {
+            CryLogAlways("PluginSystem - Failed to create Bin64 folder.");
+        }
+        return false;
+    }
+    
 #ifdef _WIN64
-    strRoot = strRoot + "\\Plugins\\Bin64\\";
+    strRoot += "\\Bin64\\";
 #elif _WIN32
-    strRoot += "\\Plugins\\Bin32\\";
+    strRoot += "\\Bin32\\";
 #endif
 
     string strFilePattern = strRoot + "*.dll";
-
+    //Find the first match
     WIN32_FIND_DATA FindFileData;
     HANDLE hFind;
     hFind = FindFirstFile(strFilePattern.c_str(), &FindFileData);
